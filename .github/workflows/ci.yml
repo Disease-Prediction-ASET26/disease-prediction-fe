@@ -38,41 +38,72 @@ jobs:
     permissions:
       contents: read
   lint:
-    if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      && github.event.action != 'closed' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Choose the frontend stack and configure its lint command."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: npm
+    - run: npm ci --no-audit --no-fund
+    - run: npm run lint
+    - run: npm run format:check
   build:
-    if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      && github.event.action != 'closed' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Choose the frontend stack and configure its build command."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: npm
+    - run: npm ci --no-audit --no-fund
+    - run: npm run build
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: frontend-build
+        path: dist/
+        retention-days: 3
+        if-no-files-found: error
   unit-test:
-    if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      && github.event.action != 'closed' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Add a real unit test suite and replace the disabled command."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: npm
+    - run: npm ci --no-audit --no-fund
+    - run: npm test
   integration-test:
-    if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      && github.event.action != 'closed' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Add integration tests and the command to run them."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: npm
+    - run: npm ci --no-audit --no-fund
+    - run: npm run test:integration
   sonarqube:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       && github.event.action != 'closed') && (vars.SONAR_ENABLED == 'true' && github.ref == 'refs/heads/main' &&
@@ -95,6 +126,13 @@ jobs:
         test -n "$SONAR_HOST_URL"
         test -n "$SONAR_PROJECT_KEY"
         test -n "$SONAR_TOKEN"
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: npm
+    - run: npm ci --no-audit --no-fund
+    - name: Unit + integration tests with coverage (coverage/lcov.info)
+      run: npm run coverage
     - uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
       env:
         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
@@ -106,14 +144,19 @@ jobs:
           -Dsonar.qualitygate.wait=true
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
   owasp:
-    if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      && github.event.action != 'closed' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Choose the frontend dependency manager and configure its dependency scan."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+    - name: npm dependency audit (fails on high or critical advisories)
+      run: npm audit --audit-level=high
   containerize:
     name: containerize / scan
     if: ${{ !cancelled() && ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name
@@ -168,12 +211,9 @@ jobs:
     - uses: Disease-Prediction-ASET26/disease-prediction-ci/actions/ci-summary@b4745f8ca8fcb941ad515f24b0c202bad5d321c8 # v1.0.0
       with:
         needs: ${{ toJSON(needs) }}
-        disabled: '{"lint": "Choose the frontend stack and configure its lint command.", "build": "Choose the frontend
-          stack and configure its build command.", "unit-test": "Add a real unit test suite and replace the disabled
-          command.", "integration-test": "Add integration tests and the command to run them.", "sonarqube": "Main-only.
-          Configure SONAR_HOST_URL, SONAR_PROJECT_KEY, SONAR_TOKEN and enable SONAR_ENABLED.", "owasp": "Choose
-          the frontend dependency manager and configure its dependency scan.", "containerize": "Supply a root Dockerfile,
-          then enable CONTAINER_ENABLED. Containerize and scan run together."}'
+        disabled: '{"sonarqube": "Main-only. Configure SONAR_HOST_URL, SONAR_PROJECT_KEY, SONAR_TOKEN and enable
+          SONAR_ENABLED.", "containerize": "Root Dockerfile supplied; enable CONTAINER_ENABLED. Containerize and
+          scan run together."}'
         enabled: ${{ format('["secret-scan","{0}","{1}"]', (vars.SONAR_ENABLED == 'true' && github.ref == 'refs/heads/main' &&
           github.event_name != 'pull_request') && 'sonarqube' || '', vars.CONTAINER_ENABLED == 'true' && 'containerize'
           || '') }}

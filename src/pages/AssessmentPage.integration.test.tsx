@@ -1,0 +1,136 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { App } from '../App';
+import {
+  networkErrorHandler,
+  receivedRequests,
+  serverErrorHandler,
+  validationErrorHandler,
+} from '../test/mocks/handlers';
+import { server } from '../test/mocks/server';
+import { AssessmentPage } from './AssessmentPage';
+
+/** Drives the real page + hook + HTTP client against MSW-mocked `POST /api/assessments`. */
+describe('AssessmentPage (integration)', () => {
+  const submitButton = () => screen.getByRole('button', { name: 'Get assessment' });
+  const textbox = () => screen.getByRole('textbox', { name: 'Describe your symptoms' });
+
+  it('keeps submit disabled until there is a symptom signal', async () => {
+    render(<App />);
+
+    expect(submitButton()).toBeDisabled();
+    expect(screen.getByText(/select at least one from the list to continue/)).toBeInTheDocument();
+
+    await userEvent.type(textbox(), '   ');
+    expect(submitButton()).toBeDisabled();
+
+    await userEvent.type(textbox(), 'cough');
+    expect(submitButton()).toBeEnabled();
+    expect(receivedRequests).toHaveLength(0);
+  });
+
+  it('free text only: submits freeText and renders the ranked predictions', async () => {
+    render(<App />);
+
+    await userEvent.type(textbox(), 'I have a cough and a headache');
+    await userEvent.click(submitButton());
+
+    expect(await screen.findByRole('heading', { name: 'Possible conditions' })).toBeInTheDocument();
+    expect(screen.getByText('Common Cold')).toBeInTheDocument();
+    expect(screen.getByText('82%')).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent('This is not a medical diagnosis');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(receivedRequests).toEqual([
+      { patientId: null, freeText: 'I have a cough and a headache', symptomEntries: [] },
+    ]);
+  });
+
+  it('checklist only: submits mapped symptom entries and renders the predictions', async () => {
+    render(<App />);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Cough' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Headache' }));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Severity of Headache' }),
+      'SEVERE',
+    );
+    await userEvent.click(submitButton());
+
+    expect(await screen.findByText('Common Cold')).toBeVisible();
+    expect(receivedRequests).toEqual([
+      {
+        patientId: null,
+        freeText: '',
+        symptomEntries: [
+          { rawText: 'cough', severity: 'MODERATE', durationDays: 0, isMapped: true },
+          { rawText: 'headache', severity: 'SEVERE', durationDays: 0, isMapped: true },
+        ],
+      },
+    ]);
+  });
+
+  it('emergency response: shows the 112 alert and de-emphasises the predictions', async () => {
+    render(<App />);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Chest pain' }));
+    await userEvent.click(submitButton());
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('112');
+    // Predictions are collapsed behind a disclosure rather than shown as the main outcome.
+    expect(screen.getByText('Common Cold')).not.toBeVisible();
+    await userEvent.click(screen.getByText(/Show the assessment details/));
+    expect(screen.getByText('Common Cold')).toBeVisible();
+  });
+
+  it('400 response: shows a validation message', async () => {
+    server.use(validationErrorHandler);
+    render(<App />);
+
+    await userEvent.type(textbox(), 'cough');
+    await userEvent.click(submitButton());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/describe at least one symptom/i);
+    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
+  });
+
+  it('network error: shows a retryable error, and retry succeeds', async () => {
+    server.use(networkErrorHandler);
+    render(<App />);
+
+    await userEvent.type(textbox(), 'cough');
+    await userEvent.click(submitButton());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not reach/i);
+
+    server.resetHandlers();
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('Common Cold')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('server error: shows a retryable error', async () => {
+    server.use(serverErrorHandler);
+    render(<App />);
+
+    await userEvent.type(textbox(), 'cough');
+    await userEvent.click(submitButton());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/unavailable/i);
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+
+  it('hands the response to its host instead of rendering inline when onAssessmentComplete is set', async () => {
+    const onAssessmentComplete = vi.fn();
+    render(<AssessmentPage onAssessmentComplete={onAssessmentComplete} />);
+
+    await userEvent.type(textbox(), 'cough');
+    await userEvent.click(submitButton());
+
+    await vi.waitFor(() => expect(onAssessmentComplete).toHaveBeenCalledTimes(1));
+    expect(onAssessmentComplete.mock.calls[0][0]).toMatchObject({ emergencyDetected: false });
+    expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
+  });
+});
