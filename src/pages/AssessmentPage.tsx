@@ -18,7 +18,7 @@ export interface AssessmentPageProps {
 
 /**
  * UC1 — patient triage. Owns the form state, composes the two input modes (FR-P1), and shows the
- * outcome: ranked predictions (FR-P2/P3) or the emergency alert (FR-P5). Contains no navigation,
+ * outcome: ranked predictions (FR-P2/P3) or, instead of them, the emergency alert (FR-P5). Contains no navigation,
  * so it can be mounted by a router unchanged.
  */
 export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
@@ -99,16 +99,10 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         </p>
       )}
 
-      {showInlineResult &&
-        data.result &&
-        (data.emergencyDetected ? (
-          <details className="deemphasised">
-            <summary>Show the assessment details (not a substitute for emergency care)</summary>
-            <PredictionResultView result={data.result} />
-          </details>
-        ) : (
-          <PredictionResultView result={data.result} />
-        ))}
+      {/* FR-P5: a red flag halts prediction; only the 112 alert is shown. */}
+      {showInlineResult && data.result && !data.emergencyDetected && (
+        <PredictionResultView result={data.result} />
+      )}
     </main>
   );
 }

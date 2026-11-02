@@ -272,17 +272,6 @@ textarea:focus-visible {
   font-style: italic;
 }
 
-.deemphasised {
-  opacity: 0.8;
-  margin-top: 1rem;
-}
-
-.deemphasised summary {
-  cursor: pointer;
-  color: var(--muted);
-  margin-bottom: 0.5rem;
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px;

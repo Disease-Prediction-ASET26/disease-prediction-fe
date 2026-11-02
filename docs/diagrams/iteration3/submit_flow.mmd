@@ -6,5 +6,5 @@ flowchart TD
     E -->|200| F{emergencyDetected?}
     E -->|400| G[ValidationError: show validation message]
     E -->|network / 5xx / bad body| H[NetworkError: show retryable error + Try again]
-    F -->|true| I[EmergencyBanner role=alert: call 112; predictions collapsed]
+    F -->|true| I[EmergencyBanner role=alert: call 112; predictions not shown - FR-P5 halt]
     F -->|false| J[PredictionResultView: ranked list, probability %, explanation, disclaimer]

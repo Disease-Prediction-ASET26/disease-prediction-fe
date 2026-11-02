@@ -69,7 +69,7 @@ describe('AssessmentPage (integration)', () => {
     ]);
   });
 
-  it('emergency response: shows the 112 alert and de-emphasises the predictions', async () => {
+  it('emergency response: shows the 112 alert and halts the predictions', async () => {
     render(<App />);
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Chest pain' }));
@@ -77,10 +77,9 @@ describe('AssessmentPage (integration)', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('112');
-    // Predictions are collapsed behind a disclosure rather than shown as the main outcome.
-    expect(screen.getByText('Common Cold')).not.toBeVisible();
-    await userEvent.click(screen.getByText(/Show the assessment details/));
-    expect(screen.getByText('Common Cold')).toBeVisible();
+    // FR-P5: prediction output is halted, not just collapsed.
+    expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
+    expect(screen.queryByText(/assessment details/i)).not.toBeInTheDocument();
   });
 
   it('400 response: shows a validation message', async () => {

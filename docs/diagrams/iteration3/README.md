@@ -117,7 +117,7 @@ flowchart TD
     E -->|200| F{emergencyDetected?}
     E -->|400| G[ValidationError: show validation message]
     E -->|network / 5xx / bad body| H[NetworkError: show retryable error + Try again]
-    F -->|true| I[EmergencyBanner role=alert: call 112; predictions collapsed]
+    F -->|true| I[EmergencyBanner role=alert: call 112; predictions not shown - FR-P5 halt]
     F -->|false| J[PredictionResultView: ranked list, probability %, explanation, disclaimer]
 ```
 
@@ -158,8 +158,8 @@ Implementation rules applied:
 1. Checked item → `{ rawText: <canonical id>, severity: <select, default MODERATE>, durationDays: 0, isMapped: true }`.
    Free text goes into `freeText` only (trimmed); the frontend does not parse it.
 2. Submit is disabled while `hasAnySymptomSignal` is false, so a known-empty request is never sent.
-3. `emergencyDetected === true` → `EmergencyBanner` above the form; predictions collapsed into a
-   `<details>` disclosure (halted as the main output, still reachable).
+3. `emergencyDetected === true` → `EmergencyBanner` above the form and no predictions at all
+   (FR-P5 / UC1 seq. "prediction … halted"; activity A11–A13 ends the flow at the alert).
 4. The disclaimer is always rendered (falls back to "This is not a medical diagnosis." if empty).
 5. No hard-coded backend URL: `VITE_API_BASE_URL`, empty = same-origin `/api` (see Step 6, item 1).
 6. Placeholder IDs only in fixtures; `patientId` is sent as `null` (no auth yet).
