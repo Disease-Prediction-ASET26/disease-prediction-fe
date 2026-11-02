@@ -4,6 +4,10 @@ React + TypeScript frontend for the Disease Prediction system (C4 container "Pat
 Patients describe their symptoms in free text and/or a checklist, submit an assessment to the
 Java backend (`POST /api/assessments`), and see ranked predictions — or an emergency alert.
 
+Routes: `/` (home), `/assessment` (form), `/assessment/result`, `/assessment/emergency`, and a
+not-found fallback. Result and emergency views need the submitted assessment in router state;
+opened directly, they redirect to the form.
+
 ```
 Patient → Patient Web App (this repo) → POST /api/assessments → API Backend (disease-prediction-be)
                                                                    → POST /predict → Prediction Service (disease-prediction-ai)
@@ -52,7 +56,8 @@ docker run -p 8080:8080 disease-prediction-fe
 ```
 
 Multi-stage build: `node:22-alpine` builds the bundle, `nginx-unprivileged` serves `dist/` on
-port 8080. Pass `--build-arg VITE_API_BASE_URL=https://api.example.test` to point the bundle at a
+port 8080, with SPA fallback (unknown paths serve `index.html`, so client routes survive a
+refresh). Pass `--build-arg VITE_API_BASE_URL=https://api.example.test` to point the bundle at a
 backend on another origin.
 
 ## Layout
@@ -64,11 +69,13 @@ src/
 ├─ application/   useAssessment hook (request building, status machine)
 ├─ components/    SymptomFreeTextInput, SymptomChecklist, SeveritySelect, PredictionResultView, EmergencyBanner
 ├─ pages/         AssessmentPage
+├─ routing/       route model, RootLayout, route components (home, assessment, result, emergency, 404)
 └─ test/          test setup + MSW handlers/fixtures
 ```
 
 ## Model-driven development docs
 
 - Iteration 3 (prediction feature): [`docs/diagrams/iteration3/`](docs/diagrams/iteration3/README.md)
+- Iteration 4 (client-side routing): [`docs/diagrams/iteration4/`](docs/diagrams/iteration4/README.md)
 
 Branching follows GitFlow: feature branches → `develop`; only `develop` → `main`.

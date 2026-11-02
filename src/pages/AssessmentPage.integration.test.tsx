@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { App } from '../App';
+
 import {
   networkErrorHandler,
   receivedRequests,
@@ -16,7 +16,7 @@ describe('AssessmentPage (integration)', () => {
   const textbox = () => screen.getByRole('textbox', { name: 'Describe your symptoms' });
 
   it('keeps submit disabled until there is a symptom signal', async () => {
-    render(<App />);
+    render(<AssessmentPage />);
 
     expect(submitButton()).toBeDisabled();
     expect(screen.getByText(/select at least one from the list to continue/)).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe('AssessmentPage (integration)', () => {
   });
 
   it('free text only: submits freeText and renders the ranked predictions', async () => {
-    render(<App />);
+    render(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'I have a cough and a headache');
     await userEvent.click(submitButton());
@@ -46,7 +46,7 @@ describe('AssessmentPage (integration)', () => {
   });
 
   it('checklist only: submits mapped symptom entries and renders the predictions', async () => {
-    render(<App />);
+    render(<AssessmentPage />);
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Cough' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Headache' }));
@@ -70,7 +70,7 @@ describe('AssessmentPage (integration)', () => {
   });
 
   it('emergency response: shows the 112 alert and halts the predictions', async () => {
-    render(<App />);
+    render(<AssessmentPage />);
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Chest pain' }));
     await userEvent.click(submitButton());
@@ -84,7 +84,7 @@ describe('AssessmentPage (integration)', () => {
 
   it('400 response: shows a validation message', async () => {
     server.use(validationErrorHandler);
-    render(<App />);
+    render(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());
@@ -96,7 +96,7 @@ describe('AssessmentPage (integration)', () => {
 
   it('network error: shows a retryable error, and retry succeeds', async () => {
     server.use(networkErrorHandler);
-    render(<App />);
+    render(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());
@@ -112,7 +112,7 @@ describe('AssessmentPage (integration)', () => {
 
   it('server error: shows a retryable error', async () => {
     server.use(serverErrorHandler);
-    render(<App />);
+    render(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());
