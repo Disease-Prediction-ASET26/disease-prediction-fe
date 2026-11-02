@@ -1,0 +1,50 @@
+classDiagram
+    class AppRouter {
+        <<router config>>
+        +appRoutes RouteObject[]
+        +createAppRouter() createBrowserRouter
+    }
+    class RootLayout {
+        +header / nav aria-label=Main
+        +Outlet
+        +focus h1 on navigate
+    }
+    class HomePage
+    class AssessmentRoute {
+        +handleComplete(response) navigate
+    }
+    class ResultRoute {
+        +assessment (from location.state)
+    }
+    class EmergencyRoute {
+        +assessment (from location.state)
+    }
+    class NotFoundPage
+    class AssessmentLocationState {
+        +assessment AssessmentResponse
+    }
+    class AssessmentPage {
+        <<Iteration 3 — reused>>
+        +onAssessmentComplete(response)
+    }
+    class PredictionResultView {
+        <<Iteration 3 — reused>>
+    }
+    class EmergencyBanner {
+        <<Iteration 3 — reused>>
+    }
+
+    AppRouter --> RootLayout : mounts
+    RootLayout --> HomePage : outlet /
+    RootLayout --> AssessmentRoute : outlet /assessment
+    RootLayout --> ResultRoute : outlet /assessment/result
+    RootLayout --> EmergencyRoute : outlet /assessment/emergency
+    RootLayout --> NotFoundPage : outlet *
+    AssessmentRoute --> AssessmentPage : renders
+    AssessmentRoute ..> ResultRoute : navigate on 200
+    AssessmentRoute ..> EmergencyRoute : navigate on emergency
+    AssessmentRoute ..> AssessmentLocationState : carries
+    ResultRoute --> PredictionResultView : renders
+    ResultRoute --> EmergencyBanner : renders if emergency
+    EmergencyRoute --> EmergencyBanner : renders
+    EmergencyRoute ..> ResultRoute : details link (same state)

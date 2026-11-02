@@ -1,6 +1,9 @@
-import { AssessmentPage } from './pages/AssessmentPage';
+import { RouterProvider } from 'react-router-dom';
+import { createAppRouter } from './routing/appRouter';
 
-/** Iteration 3: a single view, no router. */
+const appRouter = createAppRouter();
+
+/** Iteration 4: the router decides which view is shown. */
 export function App() {
-  return <AssessmentPage />;
+  return <RouterProvider router={appRouter} />;
 }

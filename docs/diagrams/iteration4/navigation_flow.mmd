@@ -1,0 +1,11 @@
+flowchart TD
+    H["/ HomePage"] -->|Start an assessment| A["/assessment AssessmentRoute"]
+    A --> S{submit result}
+    S -->|200, emergencyDetected=false| R["/assessment/result ResultRoute"]
+    S -->|200, emergencyDetected=true| E["/assessment/emergency EmergencyRoute"]
+    S -->|400 / network error| A2[stay on /assessment, show message]
+    E -->|View the assessment details| R
+    R -->|browser back| A
+    R -->|deep link without state| A
+    E -->|deep link without state| A
+    X[unknown path] --> NF["* NotFoundPage"]
