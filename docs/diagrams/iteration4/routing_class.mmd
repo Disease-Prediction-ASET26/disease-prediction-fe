@@ -45,6 +45,5 @@ classDiagram
     AssessmentRoute ..> EmergencyRoute : navigate on emergency
     AssessmentRoute ..> AssessmentLocationState : carries
     ResultRoute --> PredictionResultView : renders
-    ResultRoute --> EmergencyBanner : renders if emergency
     EmergencyRoute --> EmergencyBanner : renders
-    EmergencyRoute ..> ResultRoute : details link (same state)
+    ResultRoute ..> EmergencyRoute : redirect if emergency

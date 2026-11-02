@@ -74,15 +74,27 @@ describe('route model', () => {
     expect(screen.getByText(/No prediction is available/)).toBeInTheDocument();
   });
 
-  it('/assessment/emergency with state shows the 112 alert and a secondary details link', () => {
+  it('/assessment/emergency with state shows only the 112 alert, no predictions', () => {
     renderAppAt({ pathname: PATHS.emergency, state: { assessment: emergencyResponse } });
 
     expect(screen.getByRole('alert')).toHaveTextContent('112');
     expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /View the assessment details/ })).toHaveAttribute(
+    expect(screen.queryByRole('link', { name: /assessment details/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start a new assessment' })).toHaveAttribute(
       'href',
-      PATHS.result,
+      PATHS.assessment,
     );
+  });
+
+  it('/assessment/result with an emergency assessment redirects to the emergency view', () => {
+    const { router } = renderAppAt({
+      pathname: PATHS.result,
+      state: { assessment: emergencyResponse },
+    });
+
+    expect(router.state.location.pathname).toBe(PATHS.emergency);
+    expect(screen.getByRole('alert')).toHaveTextContent('112');
+    expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
   });
 });
 

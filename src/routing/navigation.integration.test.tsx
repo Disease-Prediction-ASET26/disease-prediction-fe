@@ -50,12 +50,9 @@ describe('navigation flow (integration)', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('112');
     expect(router.state.location.pathname).toBe(PATHS.emergency);
+    // FR-P5: prediction is halted, with no link through to it.
     expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('link', { name: /View the assessment details/ }));
-    expect(router.state.location.pathname).toBe(PATHS.result);
-    expect(screen.getByText('Common Cold')).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('112');
+    expect(screen.queryByRole('link', { name: /assessment details/i })).not.toBeInTheDocument();
   });
 
   it('a 400 keeps the user on /assessment with a validation message', async () => {

@@ -24,8 +24,8 @@ deep links work.
 | ----------------------- | ----------------- | ------------------------------------------------------- | ------------------------------------------- |
 | `/`                     | `HomePage`        | —                                                       | Landing, emergency caveat, CTA              |
 | `/assessment`           | `AssessmentRoute` | `AssessmentPage`                                        | Enter symptoms, submit                      |
-| `/assessment/result`    | `ResultRoute`     | `PredictionResultView` (+ `EmergencyBanner` if flagged) | Ranked predictions                          |
-| `/assessment/emergency` | `EmergencyRoute`  | `EmergencyBanner`                                       | FR-P5 alert (112); details behind a link    |
+| `/assessment/result`    | `ResultRoute`     | `PredictionResultView`                                  | Ranked predictions                          |
+| `/assessment/emergency` | `EmergencyRoute`  | `EmergencyBanner`                                       | FR-P5 alert (112); prediction halted        |
 | `*`                     | `NotFoundPage`    | —                                                       | 404 fallback                                |
 
 ### Structural model (`routing_class.mmd`)
@@ -43,7 +43,8 @@ flowchart TD
     S -->|200, emergencyDetected=false| R["/assessment/result ResultRoute"]
     S -->|200, emergencyDetected=true| E["/assessment/emergency EmergencyRoute"]
     S -->|400 / network error| A2[stay on /assessment, show message]
-    E -->|View the assessment details| R
+    R -->|emergency state| E
+    E -->|Start a new assessment| A
     R -->|browser back| A
     R -->|deep link without state| A
     E -->|deep link without state| A
@@ -71,8 +72,8 @@ navigates; the result/emergency routes render the existing presentational compon
 | `RootLayout` (+ `<Outlet/>`) | header, `<nav aria-label="Main">`, focus-on-navigate | `src/routing/RootLayout.tsx` |
 | `HomePage` | route component | `src/routing/routes/HomePage.tsx` |
 | `AssessmentRoute` | wraps `AssessmentPage`, `useNavigate` on success | `src/routing/routes/AssessmentRoute.tsx` |
-| `ResultRoute` | `PredictionResultView` from `location.state`; guard → `/assessment` | `src/routing/routes/ResultRoute.tsx` |
-| `EmergencyRoute` | `EmergencyBanner`; guard → `/assessment`; details link keeps state | `src/routing/routes/EmergencyRoute.tsx` |
+| `ResultRoute` | `PredictionResultView` from `location.state`; guard → `/assessment`; emergency → `/assessment/emergency` | `src/routing/routes/ResultRoute.tsx` |
+| `EmergencyRoute` | `EmergencyBanner` only; guard → `/assessment` | `src/routing/routes/EmergencyRoute.tsx` |
 | `NotFoundPage` | `*` route | `src/routing/routes/NotFoundPage.tsx` |
 | App root | `<RouterProvider router={appRouter}/>` | `src/App.tsx` |
 | SPA fallback | nginx `try_files $uri $uri/ /index.html` (`/assets/` still 404s) | `docker/nginx.conf` |
@@ -89,7 +90,7 @@ modified. The only Iteration 3 test change: `AssessmentPage.integration.test.tsx
 | --- | --- | --- |
 | Build | `npm run build` | ✅ |
 | Lint + format | `npm run lint`, `npm run format:check` | ✅ |
-| Unit tests | `npm test` | ✅ 8 files, 71 tests |
+| Unit tests | `npm test` | ✅ 8 files, 72 tests |
 | Integration tests | `npm run test:integration` | ✅ 2 files, 15 tests |
 | Coverage | `npm run coverage` → `coverage/lcov.info` | ✅ |
 | Dependency scan | `npm audit --audit-level=high` | ✅ (only the 13 moderate dev-only findings from Iteration 3) |
@@ -98,11 +99,13 @@ modified. The only Iteration 3 test change: `AssessmentPage.integration.test.tsx
 Routing tests (`src/routing/routes.test.tsx`, memory router over the real `appRoutes`): `/`
 shows home with a link to `/assessment`; labelled nav on every route; unknown paths →
 `NotFoundPage`; `/assessment/result` and `/assessment/emergency` without (or with malformed)
-state redirect to `/assessment`; both render correctly with state.
+state redirect to `/assessment`; both render correctly with state; the emergency view has no
+predictions or link to them; an emergency assessment on `/assessment/result` redirects to the
+emergency view.
 
 Navigation integration tests (`src/routing/navigation.integration.test.tsx`, full router + MSW):
 home CTA → form; valid submit → `/assessment/result` with predictions; focus moves to the new
-`h1`; emergency → `/assessment/emergency` with the 112 banner, then details link → result; 400
+`h1`; emergency → `/assessment/emergency` with the 112 banner and no predictions; 400
 stays on `/assessment`; browser back from the result returns to the form (and forward returns);
 nav "New assessment" from the result shows an empty form.
 
@@ -133,6 +136,7 @@ Manual smoke (run, Vite dev server + live `disease-prediction-be`): direct load 
 4. **Form state on back.** Going back from the result remounts `AssessmentPage`, so the form is
    empty. Acceptable for the MVP (and arguably right for privacy); preserving it would mean lifting
    form state into router state or a context — candidate refinement if users ask for it.
-5. **Emergency view keeps the result reachable.** The emergency route halts the normal output but
-   links to the result (which re-shows the 112 banner above it), matching Iteration 3's
-   "de-emphasise, don't hide" behaviour.
+5. **Emergency halts prediction.** Per the UC1 sequence diagram ("prediction … halted (FR-P5)") and
+   activity A11–A13, the emergency route shows only the 112 alert. There is no link to the
+   predictions, and `ResultRoute` redirects an emergency assessment back to the emergency view, so
+   back/forward or a crafted history entry cannot surface them either.
