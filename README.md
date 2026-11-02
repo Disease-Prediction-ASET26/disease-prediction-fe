@@ -25,24 +25,24 @@ In dev, the app calls same-origin `/api/...` and Vite proxies it to the backend 
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `npm run dev` | Vite dev server with the `/api` proxy |
-| `npm run build` | Type-check and build the production bundle into `dist/` |
-| `npm run preview` | Serve the built bundle locally |
-| `npm run lint` | ESLint (no warnings allowed) |
-| `npm run format` / `format:check` | Prettier |
-| `npm test` | Unit tests (Vitest + React Testing Library) |
-| `npm run test:integration` | Integration tests (page + hook + HTTP client against MSW) |
-| `npm run coverage` | All tests with coverage → `coverage/lcov.info` |
-| `npm run audit` | `npm audit --audit-level=high` |
+| Script                            | What it does                                              |
+| --------------------------------- | --------------------------------------------------------- |
+| `npm run dev`                     | Vite dev server with the `/api` proxy                     |
+| `npm run build`                   | Type-check and build the production bundle into `dist/`   |
+| `npm run preview`                 | Serve the built bundle locally                            |
+| `npm run lint`                    | ESLint (no warnings allowed)                              |
+| `npm run format` / `format:check` | Prettier                                                  |
+| `npm test`                        | Unit tests (Vitest + React Testing Library)               |
+| `npm run test:integration`        | Integration tests (page + hook + HTTP client against MSW) |
+| `npm run coverage`                | All tests with coverage → `coverage/lcov.info`            |
+| `npm run audit`                   | `npm audit --audit-level=high`                            |
 
 ## Configuration
 
-| Variable | Used by | Default | Meaning |
-| --- | --- | --- | --- |
-| `VITE_API_BASE_URL` | browser bundle (build time) | empty | Backend origin. Empty = same-origin `/api`. |
-| `VITE_API_PROXY_TARGET` | Vite dev server | `http://localhost:8080` | Where `/api` is proxied in dev. |
+| Variable                | Used by                     | Default                 | Meaning                                     |
+| ----------------------- | --------------------------- | ----------------------- | ------------------------------------------- |
+| `VITE_API_BASE_URL`     | browser bundle (build time) | empty                   | Backend origin. Empty = same-origin `/api`. |
+| `VITE_API_PROXY_TARGET` | Vite dev server             | `http://localhost:8080` | Where `/api` is proxied in dev.             |
 
 ## Container
 
