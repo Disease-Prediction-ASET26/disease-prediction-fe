@@ -4,7 +4,6 @@ coverage
 *.local
 .env
 .env.*
-!.env.example
 *.tsbuildinfo
 .vscode/*
 !.vscode/extensions.json
