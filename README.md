@@ -65,6 +65,6 @@ src/
 
 Diagrams and model-to-code traceability live in the docs repository,
 [`disease-prediction-docs`](https://github.com/Disease-Prediction-ASET26/disease-prediction-docs),
-under `docs/mdd/iteration3/` (prediction feature) and `docs/mdd/iteration4/` (client-side routing).
+under `mdd/iteration3/` (prediction feature) and `mdd/iteration4/` (client-side routing).
 
 Branching follows GitFlow: feature branches → `develop`; only `develop` → `main`.
