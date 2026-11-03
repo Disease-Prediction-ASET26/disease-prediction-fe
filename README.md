@@ -15,17 +15,17 @@ Patient → Patient Web App (this repo) → POST /api/assessments → API Backen
 
 ## Getting started
 
-Requires Node.js 20+ (CI uses Node 22) and npm.
+Requires Node.js 20+ and npm.
 
 ```bash
 npm ci
-cp .env.example .env.local   # optional; defaults work for local dev
 npm run dev                  # http://localhost:5173
 ```
 
 In dev, the app calls same-origin `/api/...` and Vite proxies it to the backend at
 `VITE_API_PROXY_TARGET` (default `http://localhost:8080`). Start the backend from
-`disease-prediction-be` with `./mvnw spring-boot:run`.
+`disease-prediction-be` with `./mvnw spring-boot:run`. To override a default, put the variable
+in a local `.env` file (git-ignored).
 
 ## Scripts
 
@@ -48,18 +48,6 @@ In dev, the app calls same-origin `/api/...` and Vite proxies it to the backend 
 | `VITE_API_BASE_URL`     | browser bundle (build time) | empty                   | Backend origin. Empty = same-origin `/api`. |
 | `VITE_API_PROXY_TARGET` | Vite dev server             | `http://localhost:8080` | Where `/api` is proxied in dev.             |
 
-## Container
-
-```bash
-docker build -t disease-prediction-fe .
-docker run -p 8080:8080 disease-prediction-fe
-```
-
-Multi-stage build: `node:22-alpine` builds the bundle, `nginx-unprivileged` serves `dist/` on
-port 8080, with SPA fallback (unknown paths serve `index.html`, so client routes survive a
-refresh). Pass `--build-arg VITE_API_BASE_URL=https://api.example.test` to point the bundle at a
-backend on another origin.
-
 ## Layout
 
 ```
@@ -75,7 +63,8 @@ src/
 
 ## Model-driven development docs
 
-- Iteration 3 (prediction feature): [`docs/diagrams/iteration3/`](docs/diagrams/iteration3/README.md)
-- Iteration 4 (client-side routing): [`docs/diagrams/iteration4/`](docs/diagrams/iteration4/README.md)
+Diagrams and model-to-code traceability live in the docs repository,
+[`disease-prediction-docs`](https://github.com/Disease-Prediction-ASET26/disease-prediction-docs),
+under `docs/mdd/iteration3/` (prediction feature) and `docs/mdd/iteration4/` (client-side routing).
 
 Branching follows GitFlow: feature branches → `develop`; only `develop` → `main`.
