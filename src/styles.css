@@ -265,6 +265,23 @@ textarea:focus-visible {
   font-size: 0.9rem;
 }
 
+.prediction-subheading {
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.precautions {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+}
+
+.prediction-specialty {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
 .disclaimer {
   margin: 1rem 0 0;
   font-size: 0.9rem;

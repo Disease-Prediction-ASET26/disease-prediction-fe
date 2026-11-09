@@ -40,6 +40,12 @@ export interface DiseasePrediction {
   rank: number;
   probability: number;
   diseaseName: string;
+  /** FR-P3: short description of the disease, when the prediction service knows it. */
+  description?: string | null;
+  /** FR-P3: recommended precautions. */
+  precautions?: string[] | null;
+  /** FR-P4: medical specialty to consult. */
+  specialty?: string | null;
   explanation: Explanation | null;
 }
 

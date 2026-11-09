@@ -6,7 +6,10 @@ export interface PredictionResultViewProps {
   result: PredictionResult;
 }
 
-/** FR-P2 / FR-P3: ranked likely conditions with probability, explanation and the disclaimer. */
+/**
+ * FR-P2 / FR-P3 / FR-P4: ranked likely conditions with probability, description, explanation,
+ * precautions, the specialty to consult, and the disclaimer.
+ */
 export function PredictionResultView({ result }: PredictionResultViewProps) {
   const predictions = [...result.predictions].sort((a, b) => a.rank - b.rank);
 
@@ -22,6 +25,7 @@ export function PredictionResultView({ result }: PredictionResultViewProps) {
             const weights = Object.entries(prediction.explanation?.contributionWeights ?? {}).sort(
               ([, a], [, b]) => b - a,
             );
+            const precautions = (prediction.precautions ?? []).filter((p) => p.trim() !== '');
             return (
               <li key={`${prediction.rank}-${prediction.diseaseName}`} className="prediction">
                 <div className="prediction-header">
@@ -34,6 +38,9 @@ export function PredictionResultView({ result }: PredictionResultViewProps) {
                     {formatProbability(prediction.probability)}
                   </span>
                 </div>
+                {prediction.description && (
+                  <p className="prediction-description">{prediction.description}</p>
+                )}
                 {prediction.explanation?.summary && <p>{prediction.explanation.summary}</p>}
                 {weights.length > 0 && (
                   <ul
@@ -47,6 +54,24 @@ export function PredictionResultView({ result }: PredictionResultViewProps) {
                       </li>
                     ))}
                   </ul>
+                )}
+                {precautions.length > 0 && (
+                  <>
+                    <p className="prediction-subheading">Precautions</p>
+                    <ul
+                      className="precautions"
+                      aria-label={`Precautions for ${prediction.diseaseName}`}
+                    >
+                      {precautions.map((precaution) => (
+                        <li key={precaution}>{precaution}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {prediction.specialty && (
+                  <p className="prediction-specialty">
+                    Specialist to consult: <strong>{prediction.specialty}</strong>
+                  </p>
                 )}
               </li>
             );

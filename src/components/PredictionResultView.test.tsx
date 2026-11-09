@@ -28,6 +28,28 @@ describe('PredictionResultView', () => {
     expect(within(contributions).getByText(/Headache/)).toBeInTheDocument();
   });
 
+  it('renders the description, precautions and specialty when present', () => {
+    render(<PredictionResultView result={result} />);
+
+    expect(screen.getByText('A viral infection of the nose and throat.')).toBeInTheDocument();
+    const precautions = screen.getByRole('list', { name: 'Precautions for Common Cold' });
+    expect(
+      within(precautions)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['rest', 'drink fluids']);
+    expect(screen.getByText(/Specialist to consult/)).toHaveTextContent(
+      'Specialist to consult: General Medicine',
+    );
+  });
+
+  it('omits description, precautions and specialty when the backend does not send them', () => {
+    render(<PredictionResultView result={result} />);
+
+    expect(screen.queryByRole('list', { name: 'Precautions for Allergy' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Specialist to consult/)).toHaveLength(1);
+  });
+
   it('always renders the disclaimer, even with no predictions', () => {
     render(<PredictionResultView result={{ ...result, predictions: [] }} />);
 

@@ -19,6 +19,9 @@ export const predictionResponse: AssessmentResponse = {
         rank: 1,
         probability: 0.82,
         diseaseName: 'Common Cold',
+        description: 'A viral infection of the nose and throat.',
+        precautions: ['rest', 'drink fluids'],
+        specialty: 'General Medicine',
         explanation: {
           summary: 'Cough and headache are typical of a common cold.',
           contributionWeights: { cough: 0.5, headache: 0.3 },
