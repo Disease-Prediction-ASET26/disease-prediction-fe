@@ -42,3 +42,7 @@ export const networkErrorHandler = http.post(ASSESSMENTS_URL, () => HttpResponse
 export const serverErrorHandler = http.post(ASSESSMENTS_URL, () =>
   HttpResponse.json({ status: 503 }, { status: 503 }),
 );
+
+export const unrecognizedSymptomsHandler = http.post(ASSESSMENTS_URL, () =>
+  HttpResponse.json({ status: 422 }, { status: 422 }),
+);

@@ -1,5 +1,5 @@
 import { predictionResponse } from '../test/mocks/fixtures';
-import { NetworkError, ValidationError } from './errors';
+import { NetworkError, UnrecognizedSymptomsError, ValidationError } from './errors';
 import { HttpAssessmentApiClient, resolveApiBaseUrl } from './HttpAssessmentApiClient';
 
 const request = { patientId: null, freeText: 'cough', symptomEntries: [] };
@@ -40,6 +40,11 @@ describe('HttpAssessmentApiClient', () => {
   it('maps 400 to ValidationError', async () => {
     const client = new HttpAssessmentApiClient('', async () => jsonResponse({}, 400));
     await expect(client.submitAssessment(request)).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('maps 422 to UnrecognizedSymptomsError', async () => {
+    const client = new HttpAssessmentApiClient('', async () => jsonResponse({}, 422));
+    await expect(client.submitAssessment(request)).rejects.toBeInstanceOf(UnrecognizedSymptomsError);
   });
 
   it('maps 5xx to a NetworkError carrying the status', async () => {

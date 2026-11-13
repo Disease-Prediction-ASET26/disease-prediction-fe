@@ -177,7 +177,7 @@ jobs:
     - integration-test
     - sonarqube
     - owasp
-    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/container.yml@5d4a668154db4c894c6f5300f2e6a3c14649a438 # GHCR publisher retries transient blob failures
+    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/container.yml@5e626d4cfb826c575096524f677a9e23e5017217 # GitOps dev digest pull requests
     permissions:
       contents: read
       packages: write
@@ -186,6 +186,8 @@ jobs:
       build-artifact: ''
       dev-dockerfile: Dockerfile.dev
       production-dockerfile: Dockerfile.prod
+      gitops-image-name: frontend
+    secrets: inherit
   ci:
     if: ${{ always() && ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name ==
       github.repository || github.event.pull_request.base.ref == 'main') && github.event.action != 'closed') }}
