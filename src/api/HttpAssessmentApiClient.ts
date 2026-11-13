@@ -1,7 +1,7 @@
 import type { AssessmentRequest, AssessmentResponse } from '../domain/assessment';
 import { isAssessmentResponse } from '../domain/assessment';
 import type { AssessmentApiClient } from './AssessmentApiClient';
-import { NetworkError, ValidationError } from './errors';
+import { NetworkError, UnrecognizedSymptomsError, ValidationError } from './errors';
 
 export const ASSESSMENTS_PATH = '/api/assessments';
 
@@ -39,6 +39,9 @@ export class HttpAssessmentApiClient implements AssessmentApiClient {
 
     if (response.status === 400) {
       throw new ValidationError();
+    }
+    if (response.status === 422) {
+      throw new UnrecognizedSymptomsError();
     }
     if (!response.ok) {
       throw new NetworkError(

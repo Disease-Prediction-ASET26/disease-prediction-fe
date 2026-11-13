@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AssessmentApiClient } from '../api/AssessmentApiClient';
 import { useAssessmentApiClient } from '../api/AssessmentApiContext';
 import type { AssessmentError } from '../api/errors';
-import { NetworkError, ValidationError } from '../api/errors';
+import { NetworkError, UnrecognizedSymptomsError, ValidationError } from '../api/errors';
 import type { AssessmentRequest, AssessmentResponse, SymptomEntry } from '../domain/assessment';
 import { hasAnySymptomSignal } from '../domain/assessment';
 
@@ -77,7 +77,9 @@ export function useAssessment(clientOverride?: AssessmentApiClient): UseAssessme
       } catch (caught) {
         if (requestId !== latestRequestId.current) return null;
         const mapped =
-          caught instanceof ValidationError || caught instanceof NetworkError
+          caught instanceof ValidationError ||
+          caught instanceof UnrecognizedSymptomsError ||
+          caught instanceof NetworkError
             ? caught
             : new NetworkError();
         setData(null);

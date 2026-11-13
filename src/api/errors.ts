@@ -13,6 +13,18 @@ export class ValidationError extends Error {
   }
 }
 
+/** The prediction service did not recognise any supported symptoms (HTTP 422). */
+export class UnrecognizedSymptomsError extends Error {
+  readonly kind = 'unrecognized' as const;
+
+  constructor(
+    message = 'We could not identify a supported symptom. Add more detail or choose symptoms from the list.',
+  ) {
+    super(message);
+    this.name = 'UnrecognizedSymptomsError';
+  }
+}
+
 /** The request did not complete: network failure, 5xx, or an unreadable response. Retryable. */
 export class NetworkError extends Error {
   readonly kind = 'network' as const;
@@ -28,4 +40,4 @@ export class NetworkError extends Error {
   }
 }
 
-export type AssessmentError = ValidationError | NetworkError;
+export type AssessmentError = ValidationError | UnrecognizedSymptomsError | NetworkError;

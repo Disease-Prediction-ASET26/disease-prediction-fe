@@ -5,6 +5,7 @@ import {
   networkErrorHandler,
   receivedRequests,
   serverErrorHandler,
+  unrecognizedSymptomsHandler,
   validationErrorHandler,
 } from '../test/mocks/handlers';
 import { server } from '../test/mocks/server';
@@ -92,6 +93,17 @@ describe('AssessmentPage (integration)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/describe at least one symptom/i);
     expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
     expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
+  });
+
+  it('422 response: asks for symptoms the service can recognise', async () => {
+    server.use(unrecognizedSymptomsHandler);
+    render(<AssessmentPage />);
+
+    await userEvent.type(textbox(), 'I feel strange');
+    await userEvent.click(submitButton());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not identify a supported symptom/i);
+    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 
   it('network error: shows a retryable error, and retry succeeds', async () => {
