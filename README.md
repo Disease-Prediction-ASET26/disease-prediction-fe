@@ -27,7 +27,9 @@ For the full stack in Docker, use the sibling
 `local` profile mounts this source into Vite; `dev` and `prod` build a static
 Nginx image that proxies `/api` to the backend service. The production image
 uses the same-origin API path by default, so set `API_UPSTREAM` to the backend
-service URL when its cluster service name differs.
+service URL when its cluster service name differs. The Nginx runtime stage
+uses a pinned unprivileged image and applies available Alpine security updates
+at build time.
 
 In dev, the app calls same-origin `/api/...` and Vite proxies it to the backend at
 `VITE_API_PROXY_TARGET` (default `http://localhost:8080`). Start the backend from
