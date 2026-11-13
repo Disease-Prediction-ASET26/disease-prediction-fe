@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    - uses: Disease-Prediction-ASET26/disease-prediction-ci/actions/validate-workflows@b4745f8ca8fcb941ad515f24b0c202bad5d321c8 # v1.0.0
+    - uses: Disease-Prediction-ASET26/disease-prediction-ci/actions/validate-workflows@964d17bd5d63d39a6cedf2a4c126a819cba5849e # updated shared summary
   secret-scan:
     if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       && github.event.action != 'closed' }}
@@ -39,40 +39,75 @@ jobs:
       contents: read
   lint:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+      && github.event.action != 'closed') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Choose the frontend stack and configure its lint command."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - run: npm ci
+    - run: npm run lint
   build:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+      && github.event.action != 'closed') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Choose the frontend stack and configure its build command."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - run: npm ci
+    - run: npm run build
   unit-test:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+      && github.event.action != 'closed') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Add a real unit test suite and replace the disabled command."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - run: npm ci
+    - run: npm run test -- --coverage
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ always() }}
+      with:
+        name: frontend-coverage
+        path: coverage/lcov.info
+        retention-days: 3
+        if-no-files-found: warn
   integration-test:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+      && github.event.action != 'closed') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Add integration tests and the command to run them."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - run: npm ci
+    - run: npm run test:integration
   sonarqube:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       && github.event.action != 'closed') && (vars.SONAR_ENABLED == 'true' && github.ref == 'refs/heads/main' &&
@@ -81,11 +116,16 @@ jobs:
     timeout-minutes: 20
     needs:
     - build
+    - unit-test
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
         fetch-depth: 0
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: frontend-coverage
+        path: coverage
     - name: Require SonarQube configuration
       env:
         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
@@ -107,17 +147,24 @@ jobs:
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
   owasp:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      && github.event.action != 'closed') && false }}
+      && github.event.action != 'closed') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-    - run: |
-        echo "::error::Choose the frontend dependency manager and configure its dependency scan."
-        exit 1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - run: npm ci
+    - run: npm audit --audit-level=high
   containerize:
     name: containerize / scan
     if: ${{ !cancelled() && ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name
-      == github.repository) && github.event.action != 'closed') && vars.CONTAINER_ENABLED == 'true' && !contains(needs.*.result,
+      == github.repository) && github.event.action != 'closed') && !contains(needs.*.result,
       'failure') && !contains(needs.*.result, 'cancelled') && needs['workflow-lint'].result == 'success' && needs['secret-scan'].result == 'success' && (!(vars.SONAR_ENABLED
       == 'true' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request') || needs.sonarqube.result
       == 'success') }}
@@ -130,13 +177,15 @@ jobs:
     - integration-test
     - sonarqube
     - owasp
-    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/container.yml@b4745f8ca8fcb941ad515f24b0c202bad5d321c8 # v1.0.0
+    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/container.yml@964d17bd5d63d39a6cedf2a4c126a819cba5849e # branch-selected dev and production images
     permissions:
       contents: read
       packages: write
       pull-requests: read
     with:
       build-artifact: ''
+      dev-dockerfile: Dockerfile.dev
+      production-dockerfile: Dockerfile.prod
   ci:
     if: ${{ always() && ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name ==
       github.repository || github.event.pull_request.base.ref == 'main') && github.event.action != 'closed') }}
@@ -165,15 +214,9 @@ jobs:
           echo "::error::PRs into main must come from this repository's develop branch."
           exit 1
         fi
-    - uses: Disease-Prediction-ASET26/disease-prediction-ci/actions/ci-summary@b4745f8ca8fcb941ad515f24b0c202bad5d321c8 # v1.0.0
+    - uses: Disease-Prediction-ASET26/disease-prediction-ci/actions/ci-summary@964d17bd5d63d39a6cedf2a4c126a819cba5849e # updated shared summary
       with:
         needs: ${{ toJSON(needs) }}
-        disabled: '{"lint": "Choose the frontend stack and configure its lint command.", "build": "Choose the frontend
-          stack and configure its build command.", "unit-test": "Add a real unit test suite and replace the disabled
-          command.", "integration-test": "Add integration tests and the command to run them.", "sonarqube": "Main-only.
-          Configure SONAR_HOST_URL, SONAR_PROJECT_KEY, SONAR_TOKEN and enable SONAR_ENABLED.", "owasp": "Choose
-          the frontend dependency manager and configure its dependency scan.", "containerize": "Supply a root Dockerfile,
-          then enable CONTAINER_ENABLED. Containerize and scan run together."}'
-        enabled: ${{ format('["secret-scan","{0}","{1}"]', (vars.SONAR_ENABLED == 'true' && github.ref == 'refs/heads/main' &&
-          github.event_name != 'pull_request') && 'sonarqube' || '', vars.CONTAINER_ENABLED == 'true' && 'containerize'
-          || '') }}
+        disabled: '{"sonarqube": "Main-only. Configure SONAR_HOST_URL, SONAR_PROJECT_KEY, SONAR_TOKEN and enable SONAR_ENABLED."}'
+        enabled: ${{ format('["workflow-lint","secret-scan","lint","build","unit-test","integration-test","owasp","containerize","{0}"]', (vars.SONAR_ENABLED == 'true' && github.ref == 'refs/heads/main' &&
+          github.event_name != 'pull_request') && 'sonarqube' || '') }}
