@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1.7
+ARG NODE_IMAGE=node:24.22.2-alpine3.24@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
+FROM ${NODE_IMAGE} AS local
+ARG LOCAL_UID=1000
+ARG LOCAL_GID=1000
+WORKDIR /app
+RUN addgroup -g ${LOCAL_GID} -S app \
+    && adduser -u ${LOCAL_UID} -S -G app -h /home/app app \
+    && chown -R app:app /app
+COPY --chown=app:app package.json package-lock.json ./
+USER app
+RUN --mount=type=cache,target=/home/app/.npm,uid=${LOCAL_UID},gid=${LOCAL_GID} npm ci
+COPY --chown=app:app . .
+EXPOSE 5173
+CMD ["sh", "-c", "npm ci && exec npm run dev -- --host 0.0.0.0"]
