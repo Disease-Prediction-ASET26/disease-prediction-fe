@@ -40,7 +40,13 @@ export function LoginRoute() {
           <p>Sign-in is unavailable right now. Please try again later.</p>
         </div>
       ) : (
-        <hanko-auth />
+        <>
+          <p>
+            To register with email, select <strong>Create account</strong> at the bottom of the
+            form.
+          </p>
+          <hanko-auth />
+        </>
       )}
     </main>
   );
