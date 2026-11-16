@@ -45,6 +45,10 @@ export function LoginRoute() {
             To register with email, select <strong>Create account</strong> at the bottom of the
             form.
           </p>
+          <p>
+            If you created your account with email, continue to sign in with email. Connecting
+            Google to an existing email account is not available yet.
+          </p>
           <hanko-auth />
         </>
       )}

@@ -37,6 +37,7 @@ describe('authentication flow (integration)', () => {
     await screen.findByRole('heading', { name: 'Sign in' });
     expect(screen.getByText(/to register with email, select/i)).toBeInTheDocument();
     expect(screen.getByText('Create account', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByText(/connecting google to an existing email account/i)).toBeInTheDocument();
     expect(hankoAuth()).not.toBeNull();
   });
 

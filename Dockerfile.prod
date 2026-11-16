@@ -19,7 +19,8 @@ RUN apk upgrade --no-cache
 USER 101
 ENV API_UPSTREAM=http://backend:8080 \
     CSP_HANKO_ORIGIN=${VITE_HANKO_API_URL} \
-    NGINX_ENVSUBST_FILTER='^(API_UPSTREAM|CSP_HANKO_ORIGIN)$'
+    CSP_HEADER_NAME=Content-Security-Policy-Report-Only \
+    NGINX_ENVSUBST_FILTER='^(API_UPSTREAM|CSP_HANKO_ORIGIN|CSP_HEADER_NAME)$'
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 8080
