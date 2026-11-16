@@ -26,6 +26,9 @@ def check(image, header_name, origin, override=None):
                 time.sleep(0.1)
         with urllib.request.urlopen(url, timeout=2) as response:
             second = response.headers
+        conditional = urllib.request.Request(url, headers={'If-Modified-Since': 'Wed, 31 Dec 2099 23:59:59 GMT'})
+        with urllib.request.urlopen(conditional, timeout=2) as response:
+            assert response.status == 200, 'conditional request did not return a fresh document'
         first_policy = first[header_name]
         second_policy = second[header_name]
         assert first_policy and second_policy, 'CSP header missing'
