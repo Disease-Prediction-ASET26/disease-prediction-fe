@@ -143,9 +143,10 @@ The policy permits the Hanko origin set by `VITE_HANKO_API_URL` at build time. Y
 that origin with `CSP_HANKO_ORIGIN` at runtime; this does not change the frontend bundle. If
 `VITE_API_BASE_URL` points to another origin, update the policy before enforcement.
 
-Nginx adds a per-request script nonce for Cloudflare's injected security script. HTML responses
-use `no-store` so a cached response cannot reuse the nonce. The policy permits inline styles for
-Hanko Elements. Production remains report-only until registration, Google login, passkeys,
+Nginx generates a cryptographically random script nonce for each request. It returns HTTP 503
+if nonce generation fails. Cloudflare uses the nonce for its injected security script. HTML
+responses use `no-store` so a cached response cannot reuse the nonce. The policy permits inline
+styles for Hanko Elements. Production remains report-only until registration, Google login, passkeys,
 profile settings and logout have been checked in that environment. Report-only violations appear
 in the browser console; the app does not collect reports.
 

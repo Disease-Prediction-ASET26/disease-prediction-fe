@@ -1,3 +1,7 @@
+js_engine qjs;
+js_import csp_nonce from /etc/nginx/csp_nonce.js;
+js_set $csp_nonce csp_nonce.generate;
+
 server {
     listen 8080;
     server_name _;
@@ -5,11 +9,14 @@ server {
     index index.html;
     server_tokens off;
 
+    # Never serve an app document if secure nonce generation fails.
+    if ($csp_nonce = "") { return 503; }
+
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     # Cloudflare uses this per-request nonce for its injected security script.
-    add_header ${CSP_HEADER_NAME} "default-src 'self'; script-src 'self' 'nonce-$request_id'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${CSP_HANKO_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+    add_header ${CSP_HEADER_NAME} "default-src 'self'; script-src 'self' 'nonce-$csp_nonce'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${CSP_HANKO_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
 
     location /api/ {
         proxy_pass ${API_UPSTREAM};
@@ -26,7 +33,7 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "DENY" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header ${CSP_HEADER_NAME} "default-src 'self'; script-src 'self' 'nonce-$request_id'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${CSP_HANKO_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+        add_header ${CSP_HEADER_NAME} "default-src 'self'; script-src 'self' 'nonce-$csp_nonce'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${CSP_HANKO_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
         try_files $uri =404;
     }
 
@@ -38,7 +45,7 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "DENY" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header ${CSP_HEADER_NAME} "default-src 'self'; script-src 'self' 'nonce-$request_id'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${CSP_HANKO_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+        add_header ${CSP_HEADER_NAME} "default-src 'self'; script-src 'self' 'nonce-$csp_nonce'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${CSP_HANKO_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
         try_files $uri $uri/ /index.html;
     }
 }

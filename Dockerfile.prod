@@ -15,13 +15,15 @@ RUN npm run build
 FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:0ec17b0dac55776357d46d882bed7f3d504b0e4a0bc7379c7dbb74bd12b9d4da AS runtime
 ARG VITE_HANKO_API_URL=https://identity.pocket-doc.app
 USER root
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache \
+    && sed -i '1i load_module modules/ngx_http_js_module.so;' /etc/nginx/nginx.conf
 USER 101
 ENV API_UPSTREAM=http://backend:8080 \
     CSP_HANKO_ORIGIN=${VITE_HANKO_API_URL} \
     CSP_HEADER_NAME=Content-Security-Policy-Report-Only \
     NGINX_ENVSUBST_FILTER='^(API_UPSTREAM|CSP_HANKO_ORIGIN|CSP_HEADER_NAME)$'
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY nginx/csp_nonce.js /etc/nginx/csp_nonce.js
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
