@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import {
@@ -9,15 +9,19 @@ import {
   validationErrorHandler,
 } from '../test/mocks/handlers';
 import { server } from '../test/mocks/server';
+import { renderWithSession } from '../test/renderRouter';
 import { AssessmentPage } from './AssessmentPage';
 
-/** Drives the real page + hook + HTTP client against MSW-mocked `POST /api/assessments`. */
+/**
+ * Drives the real page + hook + HTTP client against MSW-mocked `POST /api/assessments`, inside a
+ * signed-in session (the client sends the Bearer token).
+ */
 describe('AssessmentPage (integration)', () => {
   const submitButton = () => screen.getByRole('button', { name: 'Get assessment' });
   const textbox = () => screen.getByRole('textbox', { name: 'Describe your symptoms' });
 
   it('keeps submit disabled until there is a symptom signal', async () => {
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     expect(submitButton()).toBeDisabled();
     expect(screen.getByText(/select at least one from the list to continue/)).toBeInTheDocument();
@@ -31,7 +35,7 @@ describe('AssessmentPage (integration)', () => {
   });
 
   it('free text only: submits freeText and renders the ranked predictions', async () => {
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'I have a cough and a headache');
     await userEvent.click(submitButton());
@@ -47,7 +51,7 @@ describe('AssessmentPage (integration)', () => {
   });
 
   it('checklist only: submits mapped symptom entries and renders the predictions', async () => {
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Cough' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Headache' }));
@@ -71,7 +75,7 @@ describe('AssessmentPage (integration)', () => {
   });
 
   it('emergency response: shows the 112 alert and halts the predictions', async () => {
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Chest pain' }));
     await userEvent.click(submitButton());
@@ -85,7 +89,7 @@ describe('AssessmentPage (integration)', () => {
 
   it('400 response: shows a validation message', async () => {
     server.use(validationErrorHandler);
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());
@@ -97,18 +101,20 @@ describe('AssessmentPage (integration)', () => {
 
   it('422 response: asks for symptoms the service can recognise', async () => {
     server.use(unrecognizedSymptomsHandler);
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'I feel strange');
     await userEvent.click(submitButton());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/could not identify a supported symptom/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /could not identify a supported symptom/i,
+    );
     expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 
   it('network error: shows a retryable error, and retry succeeds', async () => {
     server.use(networkErrorHandler);
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());
@@ -124,7 +130,7 @@ describe('AssessmentPage (integration)', () => {
 
   it('server error: shows a retryable error', async () => {
     server.use(serverErrorHandler);
-    render(<AssessmentPage />);
+    renderWithSession(<AssessmentPage />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());
@@ -135,7 +141,7 @@ describe('AssessmentPage (integration)', () => {
 
   it('hands the response to its host instead of rendering inline when onAssessmentComplete is set', async () => {
     const onAssessmentComplete = vi.fn();
-    render(<AssessmentPage onAssessmentComplete={onAssessmentComplete} />);
+    renderWithSession(<AssessmentPage onAssessmentComplete={onAssessmentComplete} />);
 
     await userEvent.type(textbox(), 'cough');
     await userEvent.click(submitButton());

@@ -7,6 +7,9 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 COPY . .
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+# Hanko public API for this image's environment (embedded in the bundle, not a secret).
+ARG VITE_HANKO_API_URL=https://identity-dev.pocket-doc.app
+ENV VITE_HANKO_API_URL=${VITE_HANKO_API_URL}
 RUN npm run build -- --sourcemap
 
 FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:0ec17b0dac55776357d46d882bed7f3d504b0e4a0bc7379c7dbb74bd12b9d4da AS runtime

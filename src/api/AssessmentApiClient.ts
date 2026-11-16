@@ -5,7 +5,8 @@ import type { AssessmentRequest, AssessmentResponse } from '../domain/assessment
  * port. Views depend on this interface only, so the HTTP client and a test double are
  * interchangeable without view changes.
  *
- * Implementations reject with `ValidationError` (400) or `NetworkError` (anything else).
+ * Implementations reject with `ValidationError` (400), `UnrecognizedSymptomsError` (422),
+ * `ApiProblemError` (401/403) or `NetworkError` (anything else).
  */
 export interface AssessmentApiClient {
   submitAssessment(request: AssessmentRequest): Promise<AssessmentResponse>;

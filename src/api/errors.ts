@@ -40,4 +40,21 @@ export class NetworkError extends Error {
   }
 }
 
-export type AssessmentError = ValidationError | UnrecognizedSymptomsError | NetworkError;
+/**
+ * The backend refused the request for a reason the user can act on (a 4xx problem response with a
+ * `code`, MDD Iteration 6): no profile yet, no consent, wrong role, session ended.
+ */
+export class ApiProblemError extends Error {
+  readonly kind = 'problem' as const;
+  readonly code: string;
+  readonly status: number;
+  constructor(code: string, status: number, message: string) {
+    super(message);
+    this.name = 'ApiProblemError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
+export type AssessmentError =
+  ValidationError | UnrecognizedSymptomsError | NetworkError | ApiProblemError;

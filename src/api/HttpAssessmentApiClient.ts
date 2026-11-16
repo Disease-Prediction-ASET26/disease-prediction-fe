@@ -2,6 +2,7 @@ import type { AssessmentRequest, AssessmentResponse } from '../domain/assessment
 import { isAssessmentResponse } from '../domain/assessment';
 import type { AssessmentApiClient } from './AssessmentApiClient';
 import { NetworkError, UnrecognizedSymptomsError, ValidationError } from './errors';
+import { toProblemError } from './problem';
 
 export const ASSESSMENTS_PATH = '/api/assessments';
 
@@ -12,7 +13,10 @@ export function resolveApiBaseUrl(
   return (raw ?? '').trim().replace(/\/+$/, '');
 }
 
-/** Adapter: `AssessmentApiClient` over `fetch` to the Java backend's `POST /api/assessments`. */
+/**
+ * Adapter: `AssessmentApiClient` over `fetch` to the Java backend's `POST /api/assessments`. In the
+ * app `fetchFn` is the authorized fetch, which adds the session token.
+ */
 export class HttpAssessmentApiClient implements AssessmentApiClient {
   private readonly baseUrl: string;
   private readonly fetchFn: typeof fetch;
@@ -42,6 +46,10 @@ export class HttpAssessmentApiClient implements AssessmentApiClient {
     }
     if (response.status === 422) {
       throw new UnrecognizedSymptomsError();
+    }
+    // MDD Iteration 6: 401 (session ended) and 403 (no profile, no consent, not a patient).
+    if (response.status === 401 || response.status === 403) {
+      throw await toProblemError(response);
     }
     if (!response.ok) {
       throw new NetworkError(

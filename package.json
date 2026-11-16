@@ -21,6 +21,7 @@
     "audit": "npm audit --audit-level=high"
   },
   "dependencies": {
+    "@teamhanko/hanko-elements": "3.1.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5"
