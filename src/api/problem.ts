@@ -11,6 +11,7 @@ const MESSAGES: Record<string, string> = {
   forbidden: 'This feature is only available to patient accounts.',
   'profile-exists': 'Your profile already exists.',
   'email-not-verified': 'Your account has no verified email address. Sign in again with email.',
+  'account-quarantined': 'Your account needs review. Please contact support.',
   'invalid-profile': 'Please check the details you entered.',
   'identity-unavailable': 'Sign-in could not be confirmed right now. Please try again shortly.',
   unauthorized: 'Your session has ended. Please sign in again.',

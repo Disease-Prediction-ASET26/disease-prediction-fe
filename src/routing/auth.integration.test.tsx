@@ -181,6 +181,21 @@ describe('authentication flow (integration)', () => {
     expect(screen.queryByText(patientProfile.fullName)).not.toBeInTheDocument();
   });
 
+  it('asks quarantined users to contact support instead of verifying their email', async () => {
+    server.use(
+      http.get(PROFILE_URL, () =>
+        HttpResponse.json(problem(403, 'account-quarantined'), { status: 403 }),
+      ),
+    );
+    renderApp({ entries: [PATHS.account] });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Your account needs review. Please contact support.',
+    );
+    expect(screen.queryByRole('heading', { name: 'Verify your email' })).not.toBeInTheDocument();
+    expect(document.querySelector('hanko-profile')).toBeNull();
+  });
+
   it('offers email verification when onboarding is rejected', async () => {
     backend.profile = null;
     server.use(
