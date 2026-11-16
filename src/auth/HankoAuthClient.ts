@@ -19,7 +19,13 @@ export class HankoAuthClient implements AuthClient {
   constructor(apiUrl: string = resolveHankoApiUrl()) {
     this.apiUrl = apiUrl.replace(/\/$/, '');
     this.ready = import('@teamhanko/hanko-elements')
-      .then(({ register }) => register(apiUrl, { enablePasskeys: true, cookieSameSite: 'strict' }))
+      .then(({ register }) =>
+        register(apiUrl, {
+          enablePasskeys: true,
+          hidePasskeyButtonOnLogin: true,
+          cookieSameSite: 'strict',
+        }),
+      )
       .then(({ hanko }) => {
         this.hanko = hanko;
         return hanko;

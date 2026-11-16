@@ -33,6 +33,9 @@ Every backend call needs a signed-in user (MDD Iteration 6). Hanko Elements (`<h
 handles registration and login; the Hanko SDK keeps the session token, and the API clients send it
 as `Authorization: Bearer <token>`. A 401 from the backend signs the user out.
 
+The login page offers email and Google first. After entering an email, users can choose a passcode,
+password or passkey. The browser may still offer saved passkeys through autofill on the email field.
+
 Routes: `/login` (public), `/onboarding` (first login: name, optional date of birth, consent),
 `/account` (profile, consent, sign-in methods, sign out). The assessment routes need a finished
 profile and an active consent; the home page stays public. Route guards only shape the UI: the
