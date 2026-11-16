@@ -31,6 +31,15 @@ describe('authentication flow (integration)', () => {
     expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
   });
 
+  it('explains how a new user can register with email', async () => {
+    renderApp({ entries: [PATHS.login], auth: new FakeAuthClient(false) });
+
+    await screen.findByRole('heading', { name: 'Sign in' });
+    expect(screen.getByText(/to register with email, select/i)).toBeInTheDocument();
+    expect(screen.getByText('Create account', { selector: 'strong' })).toBeInTheDocument();
+    expect(hankoAuth()).not.toBeNull();
+  });
+
   it('a signed-out visit to /assessment goes to /login and comes back after login', async () => {
     const auth = new FakeAuthClient(false);
     const { router } = renderApp({ entries: [PATHS.assessment], auth });
