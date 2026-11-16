@@ -6,8 +6,10 @@ export type AuthStatus = 'loading' | 'anonymous' | 'authenticated';
 export interface AuthState {
   status: AuthStatus;
   client: AuthClient;
-  /** Ends the session in Hanko and locally. */
-  logout: () => Promise<void>;
+  /** Returns true only when Hanko confirms the session has ended. */
+  logout: () => Promise<boolean>;
+  logoutError: boolean;
+  logoutPending: boolean;
   /** Called by the API layer when the backend rejects the token (401). */
   handleUnauthorized: () => void;
 }

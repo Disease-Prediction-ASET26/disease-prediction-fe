@@ -9,7 +9,7 @@ import { PATHS } from '../paths';
  * passkeys and password, and sign-out.
  */
 export function AccountRoute() {
-  const { client, logout } = useAuth();
+  const { client, logout, logoutPending } = useAuth();
   const { profile, recordConsent } = useProfile();
   const navigate = useNavigate();
   const [elementsFailed, setElementsFailed] = useState(false);
@@ -41,9 +41,7 @@ export function AccountRoute() {
   };
 
   const signOut = async () => {
-    // Leave the protected page first; otherwise its guard sends the user to /login.
-    await navigate(PATHS.home);
-    await logout();
+    if (await logout()) await navigate(PATHS.home);
   };
 
   return (
@@ -107,7 +105,7 @@ export function AccountRoute() {
         )}
       </section>
 
-      <button type="button" onClick={() => void signOut()}>
+      <button type="button" disabled={logoutPending} onClick={() => void signOut()}>
         Sign out
       </button>
     </main>

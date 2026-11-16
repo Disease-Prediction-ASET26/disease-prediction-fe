@@ -14,6 +14,7 @@ export interface ProfileState {
   status: ProfileStatus;
   profile: Profile | null;
   errorMessage: string | null;
+  errorCode: string | null;
   reload: () => void;
   /** Rejects with the API error so the form can show it. */
   createProfile: (request: CreateProfileRequest) => Promise<Profile>;

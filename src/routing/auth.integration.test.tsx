@@ -1,10 +1,12 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { FakeAuthClient } from '../test/FakeAuthClient';
-import { patientProfile } from '../test/mocks/fixtures';
+import { patientProfile, problem } from '../test/mocks/fixtures';
 import {
   backend,
   profileServerErrorHandler,
+  PROFILE_URL,
   receivedProfileRequests,
   receivedRequests,
   sessionEndedHandler,
@@ -142,6 +144,73 @@ describe('authentication flow (integration)', () => {
     expect(auth.logoutCalls).toBe(1);
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])(
+    'reports unconfirmed sign-out and allows retry (local token cleared: %s)',
+    async (clearedLocally) => {
+      const auth = new FakeAuthClient(true);
+      auth.logoutFails = true;
+      auth.logoutEndsLocallyBeforeFailure = clearedLocally;
+      const { router } = renderApp({ entries: [PATHS.assessment], auth });
+      await textbox();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('could not confirm sign-out');
+      expect(auth.logoutCalls).toBe(1);
+
+      auth.logoutFails = false;
+      await userEvent.click(screen.getByRole('button', { name: 'Try signing out again' }));
+      await waitFor(() => expect(router.state.location.pathname).toBe(PATHS.home));
+      expect(screen.queryByText(/could not confirm sign-out/)).not.toBeInTheDocument();
+      expect(auth.logoutCalls).toBe(2);
+    },
+  );
+
+  it('lets an existing user verify their email without loading the protected profile', async () => {
+    server.use(
+      http.get(PROFILE_URL, () =>
+        HttpResponse.json(problem(403, 'email-not-verified'), { status: 403 }),
+      ),
+    );
+    renderApp({ entries: [PATHS.account] });
+
+    expect(await screen.findByRole('heading', { name: 'Verify your email' })).toBeInTheDocument();
+    expect(document.querySelector('hanko-profile')).not.toBeNull();
+    expect(screen.getByText(/sign out and sign in again/i)).toBeInTheDocument();
+    expect(screen.queryByText(patientProfile.fullName)).not.toBeInTheDocument();
+  });
+
+  it('asks quarantined users to contact support instead of verifying their email', async () => {
+    server.use(
+      http.get(PROFILE_URL, () =>
+        HttpResponse.json(problem(403, 'account-quarantined'), { status: 403 }),
+      ),
+    );
+    renderApp({ entries: [PATHS.account] });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Your account needs review. Please contact support.',
+    );
+    expect(screen.queryByRole('heading', { name: 'Verify your email' })).not.toBeInTheDocument();
+    expect(document.querySelector('hanko-profile')).toBeNull();
+  });
+
+  it('offers email verification when onboarding is rejected', async () => {
+    backend.profile = null;
+    server.use(
+      http.post(PROFILE_URL, () =>
+        HttpResponse.json(problem(400, 'email-not-verified'), { status: 400 }),
+      ),
+    );
+    renderApp({ entries: [PATHS.onboarding] });
+    await screen.findByRole('heading', { name: 'Complete your profile' });
+    await userEvent.type(screen.getByLabelText('Full name'), 'Ana Pop');
+    await userEvent.click(screen.getByRole('checkbox', { name: /I consent/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save and continue' }));
+
+    expect(await screen.findByRole('heading', { name: 'Verify your email' })).toBeInTheDocument();
+    expect(document.querySelector('hanko-profile')).not.toBeNull();
   });
 
   it('the account page shows the profile and Hanko profile element', async () => {

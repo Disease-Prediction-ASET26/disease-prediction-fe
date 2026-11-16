@@ -13,11 +13,13 @@ ENV VITE_HANKO_API_URL=${VITE_HANKO_API_URL}
 RUN npm run build
 
 FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:0ec17b0dac55776357d46d882bed7f3d504b0e4a0bc7379c7dbb74bd12b9d4da AS runtime
+ARG VITE_HANKO_API_URL=https://identity.pocket-doc.app
 USER root
 RUN apk upgrade --no-cache
 USER 101
 ENV API_UPSTREAM=http://backend:8080 \
-    NGINX_ENVSUBST_FILTER=API_UPSTREAM
+    CSP_HANKO_ORIGIN=${VITE_HANKO_API_URL} \
+    NGINX_ENVSUBST_FILTER='^(API_UPSTREAM|CSP_HANKO_ORIGIN)$'
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 8080

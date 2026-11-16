@@ -23,12 +23,10 @@ function useFocusHeadingOnNavigate() {
 /** Shared shell for every route: header with the main navigation, then the active route. */
 export function RootLayout() {
   useFocusHeadingOnNavigate();
-  const { status, logout } = useAuth();
+  const { status, logout, logoutError, logoutPending } = useAuth();
   const navigate = useNavigate();
   const signOut = async () => {
-    // Leave the protected page first; otherwise its guard sends the user to /login.
-    await navigate(PATHS.home);
-    await logout();
+    if (await logout()) await navigate(PATHS.home);
   };
 
   return (
@@ -55,7 +53,12 @@ export function RootLayout() {
                   </NavLink>
                 </li>
                 <li>
-                  <button type="button" className="link-button" onClick={() => void signOut()}>
+                  <button
+                    type="button"
+                    className="link-button"
+                    disabled={logoutPending}
+                    onClick={() => void signOut()}
+                  >
                     Sign out
                   </button>
                 </li>
@@ -70,6 +73,14 @@ export function RootLayout() {
           </ul>
         </nav>
       </header>
+      {logoutError && (
+        <div className="message message-error" role="alert">
+          <p>We could not confirm sign-out. Your session may still be active.</p>
+          <button type="button" disabled={logoutPending} onClick={() => void signOut()}>
+            Try signing out again
+          </button>
+        </div>
+      )}
       <Outlet />
     </div>
   );

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useProfileApiClient } from '../api/ProfileApiContext';
+import { ApiProblemError } from '../api/errors';
 import { useAuth } from '../auth/AuthContext';
 import type { CreateProfileRequest, Profile } from '../domain/profile';
 import type { ProfileState, ProfileStatus } from './ProfileContext';
@@ -22,6 +23,7 @@ export function ProfileProvider({ initialProfile, children }: ProfileProviderPro
   const [status, setStatus] = useState<ProfileStatus>(initialProfile ? 'ready' : 'none');
   const [profile, setProfile] = useState<Profile | null>(initialProfile ?? null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   // Only the latest load may update state (a logout can overtake a slow request).
   const latestLoad = useRef(0);
   const skipFirstLoad = useRef(Boolean(initialProfile));
@@ -30,6 +32,7 @@ export function ProfileProvider({ initialProfile, children }: ProfileProviderPro
     const loadId = ++latestLoad.current;
     setStatus('loading');
     setErrorMessage(null);
+    setErrorCode(null);
     client
       .getProfile()
       .then((loaded) => {
@@ -40,6 +43,7 @@ export function ProfileProvider({ initialProfile, children }: ProfileProviderPro
       .catch((error: unknown) => {
         if (loadId !== latestLoad.current) return;
         setProfile(null);
+        setErrorCode(error instanceof ApiProblemError ? error.code : null);
         setErrorMessage(
           error instanceof Error ? error.message : 'Your profile could not be loaded.',
         );
@@ -59,13 +63,24 @@ export function ProfileProvider({ initialProfile, children }: ProfileProviderPro
       skipFirstLoad.current = false;
       setProfile(null);
       setErrorMessage(null);
+      setErrorCode(null);
       setStatus('none');
     }
   }, [authStatus, load]);
 
   const createProfile = useCallback(
     async (request: CreateProfileRequest) => {
-      const created = await client.createProfile(request);
+      let created: Profile;
+      try {
+        created = await client.createProfile(request);
+      } catch (error) {
+        if (error instanceof ApiProblemError && error.code === 'email-not-verified') {
+          setErrorCode(error.code);
+          setErrorMessage(error.message);
+          setStatus('error');
+        }
+        throw error;
+      }
       latestLoad.current += 1;
       setProfile(created);
       setStatus('ready');
@@ -84,8 +99,16 @@ export function ProfileProvider({ initialProfile, children }: ProfileProviderPro
   );
 
   const value = useMemo<ProfileState>(
-    () => ({ status, profile, errorMessage, reload: load, createProfile, recordConsent }),
-    [status, profile, errorMessage, load, createProfile, recordConsent],
+    () => ({
+      status,
+      profile,
+      errorMessage,
+      errorCode,
+      reload: load,
+      createProfile,
+      recordConsent,
+    }),
+    [status, profile, errorMessage, errorCode, load, createProfile, recordConsent],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
