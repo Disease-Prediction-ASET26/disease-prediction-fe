@@ -78,13 +78,17 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         </div>
       </form>
 
-      {status === 'error' &&
-        (error?.kind === 'validation' || error?.kind === 'unrecognized') && (
+      {status === 'error' && (error?.kind === 'validation' || error?.kind === 'unrecognized') && (
         <div className="message message-warning" role="alert">
           <p>{error.message}</p>
         </div>
-        )}
+      )}
 
+      {status === 'error' && error?.kind === 'problem' && (
+        <div className="message message-warning" role="alert">
+          <p>{error.message}</p>
+        </div>
+      )}
       {status === 'error' && error?.kind === 'network' && (
         <div className="message message-error" role="alert">
           <p>{error.message}</p>

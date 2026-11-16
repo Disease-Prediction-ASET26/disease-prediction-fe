@@ -332,3 +332,83 @@ textarea:focus-visible {
 main h1:focus {
   outline: none;
 }
+
+/* MDD Iteration 6: sign-in, onboarding and account. */
+.field label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+input[type='text'],
+input[type='date'] {
+  width: 100%;
+  max-width: 28rem;
+  font: inherit;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: inherit;
+}
+.consent-field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.6rem;
+  align-items: start;
+}
+.consent-field input {
+  margin-top: 0.3rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.consent-field label {
+  margin: 0;
+}
+.consent-field .field-hint {
+  grid-column: 2;
+  margin: 0;
+}
+.app-header nav ul {
+  align-items: center;
+}
+.link-button {
+  background: none;
+  color: var(--text);
+  padding: 0.25rem 0;
+  font-weight: 400;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+.link-button:hover {
+  border-bottom-color: var(--border);
+}
+.account-page section {
+  margin-bottom: 2rem;
+}
+.profile-details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+.profile-details dt {
+  font-weight: 600;
+}
+.profile-details dd {
+  margin: 0;
+}
+/* Hanko Elements read these CSS variables through their shadow DOM. */
+hanko-auth,
+hanko-profile {
+  display: block;
+  max-width: 28rem;
+  --font-family: inherit;
+  --color: var(--text);
+  --color-shade-1: var(--muted);
+  --color-shade-2: var(--border);
+  --brand-color: var(--accent);
+  --brand-contrast-color: var(--accent-contrast);
+  --background-color: var(--surface);
+  --border-radius: 8px;
+  --container-padding: 0;
+  --container-max-width: 28rem;
+}

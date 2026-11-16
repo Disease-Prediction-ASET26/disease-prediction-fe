@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import { PATHS } from './paths';
 
 /** Moves focus to the new view's heading after client-side navigation (not on first load). */
@@ -22,6 +23,13 @@ function useFocusHeadingOnNavigate() {
 /** Shared shell for every route: header with the main navigation, then the active route. */
 export function RootLayout() {
   useFocusHeadingOnNavigate();
+  const { status, logout } = useAuth();
+  const navigate = useNavigate();
+  const signOut = async () => {
+    // Leave the protected page first; otherwise its guard sends the user to /login.
+    await navigate(PATHS.home);
+    await logout();
+  };
 
   return (
     <div className="app-shell">
@@ -34,11 +42,31 @@ export function RootLayout() {
                 Home
               </NavLink>
             </li>
-            <li>
-              <NavLink to={PATHS.assessment} end>
-                New assessment
-              </NavLink>
-            </li>
+            {status === 'authenticated' ? (
+              <>
+                <li>
+                  <NavLink to={PATHS.assessment} end>
+                    New assessment
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to={PATHS.account} end>
+                    Account
+                  </NavLink>
+                </li>
+                <li>
+                  <button type="button" className="link-button" onClick={() => void signOut()}>
+                    Sign out
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <NavLink to={PATHS.login} end>
+                  Sign in
+                </NavLink>
+              </li>
+            )}
           </ul>
         </nav>
       </header>

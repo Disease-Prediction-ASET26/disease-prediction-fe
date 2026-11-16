@@ -1,4 +1,5 @@
 import type { AssessmentResponse } from '../../domain/assessment';
+import type { Profile } from '../../domain/profile';
 
 // Placeholder identifiers only — no real patient data.
 export const predictionResponse: AssessmentResponse = {
@@ -33,3 +34,23 @@ export const emergencyResponse: AssessmentResponse = {
   assessmentId: '00000000-0000-4000-8000-000000000003',
   emergencyDetected: true,
 };
+
+// MDD Iteration 6. Placeholder identity only — no real person.
+export const patientProfile: Profile = {
+  id: '00000000-0000-4000-8000-000000000010',
+  email: 'patient@example.com',
+  fullName: 'Test Patient',
+  role: 'PATIENT',
+  dateOfBirth: '1990-01-01',
+  consentGranted: true,
+};
+
+export function problem(status: number, code: string) {
+  return {
+    type: `urn:pocket-doc:problem:${code}`,
+    title: 'Error',
+    status,
+    detail: 'Problem detail from the backend (not shown to patients).',
+    code,
+  };
+}
