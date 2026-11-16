@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Check CSP headers of locally built dev and prod frontend images."""
 import re
+import os
 import subprocess
+import tempfile
 import time
+import urllib.error
 import urllib.request
 
 
@@ -50,3 +53,35 @@ def check(image, header_name, origin, override=None):
 check('pocket-csp-frontend:dev', 'Content-Security-Policy', 'https://identity-dev.pocket-doc.app')
 check('pocket-csp-frontend:prod', 'Content-Security-Policy-Report-Only', 'https://identity.pocket-doc.app')
 check('pocket-csp-frontend:dev', 'Content-Security-Policy-Report-Only', 'https://identity-dev.pocket-doc.app', 'Content-Security-Policy-Report-Only')
+
+
+def check_nonce_failure(image):
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.js') as module:
+        module.write("function generate() { throw new Error('test failure'); }\nexport default { generate };\n")
+        module.flush()
+        os.chmod(module.name, 0o644)
+        command = ['docker', 'run', '--detach', '--rm', '-p', '127.0.0.1::8080',
+                   '-e', 'API_UPSTREAM=http://127.0.0.1:18088',
+                   '-v', f'{module.name}:/etc/nginx/csp_nonce.js:ro', image]
+        container = subprocess.check_output(command, text=True).strip()
+        try:
+            address = subprocess.check_output(['docker', 'port', container, '8080/tcp'], text=True).strip()
+            for attempt in range(50):
+                try:
+                    urllib.request.urlopen(f'http://{address}/login', timeout=2)
+                except urllib.error.HTTPError as error:
+                    assert error.code == 503, 'nonce failure should return HTTP 503'
+                    break
+                except OSError:
+                    if attempt == 49:
+                        raise
+                    time.sleep(0.1)
+                else:
+                    raise AssertionError('served app when nonce generation failed')
+            print(f'{image}: nonce failure returns HTTP 503')
+        finally:
+            subprocess.run(['docker', 'rm', '-f', container], stdout=subprocess.DEVNULL, check=False)
+
+
+check_nonce_failure('pocket-csp-frontend:dev')
+check_nonce_failure('pocket-csp-frontend:prod')
