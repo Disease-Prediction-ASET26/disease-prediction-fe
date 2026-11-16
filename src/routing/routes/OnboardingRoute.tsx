@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '../../application/ProfileContext';
 import { LoadingView } from '../guards/LoadingView';
+import { ProfileLoadError } from '../guards/ProfileLoadError';
 import { readRedirectTarget } from '../paths';
 
 /** Yesterday as `YYYY-MM-DD` (local time): the latest allowed date of birth. */
@@ -18,7 +19,7 @@ function latestBirthDate(today: Date = new Date()): string {
  * patient profile and records consent (FR-G1, UC1 step 1) with `POST /api/me`.
  */
 export function OnboardingRoute() {
-  const { status, profile, errorMessage, reload, createProfile } = useProfile();
+  const { status, profile, createProfile } = useProfile();
   const location = useLocation();
   const id = useId();
   const [fullName, setFullName] = useState('');
@@ -31,19 +32,7 @@ export function OnboardingRoute() {
     return <Navigate to={readRedirectTarget(location.state)} replace />;
   }
   if (status === 'none' || status === 'loading') return <LoadingView />;
-  if (status === 'error') {
-    return (
-      <main>
-        <h1>Your profile could not be loaded</h1>
-        <div className="message message-error" role="alert">
-          <p>{errorMessage}</p>
-          <button type="button" onClick={reload}>
-            Try again
-          </button>
-        </div>
-      </main>
-    );
-  }
+  if (status === 'error') return <ProfileLoadError />;
 
   const canSubmit = fullName.trim().length > 0 && consent && !submitting;
 

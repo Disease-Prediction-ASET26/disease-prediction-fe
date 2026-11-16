@@ -12,9 +12,12 @@ import { resolveHankoApiUrl } from './hankoConfig';
  */
 export class HankoAuthClient implements AuthClient {
   private readonly ready: Promise<Hanko>;
+  private readonly apiUrl: string;
   private hanko: Hanko | null = null;
+  private pendingLogoutToken: string | null = null;
 
   constructor(apiUrl: string = resolveHankoApiUrl()) {
+    this.apiUrl = apiUrl.replace(/\/$/, '');
     this.ready = import('@teamhanko/hanko-elements')
       .then(({ register }) => register(apiUrl, { enablePasskeys: true, cookieSameSite: 'strict' }))
       .then(({ hanko }) => {
@@ -39,7 +42,26 @@ export class HankoAuthClient implements AuthClient {
 
   async logout(): Promise<void> {
     const hanko = await this.ready;
-    await hanko.logout();
+    const token = hanko.getSessionToken();
+    // Hanko SDK 3.1 removes its local token even if /logout returns an error response.
+    // Retry with the saved token so a later 401 cannot be caused by sending no token.
+    if (this.pendingLogoutToken && token !== this.pendingLogoutToken) {
+      const response = await fetch(`${this.apiUrl}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Authorization: `Bearer ${this.pendingLogoutToken}` },
+      });
+      if (!response.ok && response.status !== 401) throw new Error('Sign-out failed');
+      this.pendingLogoutToken = null;
+      if (!token) return;
+    }
+    try {
+      await hanko.logout();
+      this.pendingLogoutToken = null;
+    } catch (error) {
+      this.pendingLogoutToken = token || null;
+      throw error;
+    }
   }
 
   onSessionCreated(callback: () => void): () => void {

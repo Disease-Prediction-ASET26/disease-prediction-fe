@@ -17,6 +17,8 @@ export interface AuthProviderProps {
  */
 export function AuthProvider({ client, initialStatus = 'loading', children }: AuthProviderProps) {
   const [status, setStatus] = useState<AuthStatus>(initialStatus);
+  const [logoutError, setLogoutError] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -38,21 +40,29 @@ export function AuthProvider({ client, initialStatus = 'loading', children }: Au
   }, [client]);
 
   const logout = useCallback(async () => {
+    setLogoutError(false);
+    setLogoutPending(true);
     try {
       await client.logout();
+      setStatus('anonymous');
+      return true;
     } catch {
-      // The local session ends even if Hanko cannot be reached.
+      // The SDK may have cleared its local token, but revocation was not confirmed.
+      setLogoutError(true);
+      return false;
+    } finally {
+      setLogoutPending(false);
     }
-    setStatus('anonymous');
   }, [client]);
 
   const handleUnauthorized = useCallback(() => {
-    void logout();
-  }, [logout]);
+    setStatus('anonymous');
+    void client.logout().catch(() => undefined);
+  }, [client]);
 
   const value = useMemo<AuthState>(
-    () => ({ status, client, logout, handleUnauthorized }),
-    [status, client, logout, handleUnauthorized],
+    () => ({ status, client, logout, logoutError, logoutPending, handleUnauthorized }),
+    [status, client, logout, logoutError, logoutPending, handleUnauthorized],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

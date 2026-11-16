@@ -38,6 +38,15 @@ Routes: `/login` (public), `/onboarding` (first login: name, optional date of bi
 profile and an active consent; the home page stays public. Route guards only shape the UI: the
 backend checks the token on every request.
 
+If the backend reports an unverified primary email, the app opens Hanko's sign-in settings so
+the user can verify it. The user then signs out and signs in again to obtain a session with an
+updated email claim. If sign-out fails, the app warns that the server session may still be active
+and offers a retry. Keep the page open while retrying: the retry token is held in memory only.
+
+Hanko Elements stores its session token in a JavaScript-readable cookie on the app origin so the
+app can send it to the backend. An injected script could read this token. A backend session with
+an HttpOnly cookie would need changes to the authentication flow and CSRF protection.
+
 For local development, start the backend's Docker Compose stack (`disease-prediction-be`,
 `docker compose up -d`). It runs Hanko on `http://localhost:8100`, the default here, and Mailpit
 on `http://localhost:8025`, where the sign-in passcodes arrive. Passkeys work on
@@ -48,11 +57,11 @@ on `http://localhost:8025`, where the sign-in passcodes arrive. Passkeys work on
 
 The three Dockerfiles run the same frontend in different ways:
 
-| File | Use | Container port |
-| --- | --- | --- |
-| `Dockerfile.local` | Vite development server and frontend tests. | 5173 |
-| `Dockerfile.dev` | Static Nginx image with source maps. | 8080 |
-| `Dockerfile.prod` | Static Nginx image without source maps. | 8080 |
+| File               | Use                                         | Container port |
+| ------------------ | ------------------------------------------- | -------------- |
+| `Dockerfile.local` | Vite development server and frontend tests. | 5173           |
+| `Dockerfile.dev`   | Static Nginx image with source maps.        | 8080           |
+| `Dockerfile.prod`  | Static Nginx image without source maps.     | 8080           |
 
 ### Run the full stack
 
@@ -122,6 +131,14 @@ rebuild.
 `http://backend:8080`. Keep `VITE_API_BASE_URL` empty to use the same-origin
 `/api` proxy. Do not put secrets in `VITE_` values: they are in the browser
 bundle.
+
+The Nginx images send a **report-only** Content Security Policy (CSP). Its Hanko connection
+origin defaults to the image's `VITE_HANKO_API_URL` build argument and can be changed at runtime
+with `CSP_HANKO_ORIGIN`; this does not change the frontend bundle. The policy allows inline
+styles because Hanko Elements injects them. It currently reports violations in the browser console
+only and does not block them. Check registration, Google login, passkeys, profile settings and
+logout in a browser before enforcing the policy. If `VITE_API_BASE_URL` points to a different
+origin, update the policy before enforcement.
 
 ## Scripts
 

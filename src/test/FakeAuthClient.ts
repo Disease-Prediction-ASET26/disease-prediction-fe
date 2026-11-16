@@ -7,6 +7,8 @@ export class FakeAuthClient implements AuthClient {
   token: string | null;
   logoutCalls = 0;
   elementsFail = false;
+  logoutFails = false;
+  logoutEndsLocallyBeforeFailure = false;
   private readonly created = new Set<() => void>();
   private readonly ended = new Set<() => void>();
 
@@ -24,6 +26,10 @@ export class FakeAuthClient implements AuthClient {
 
   logout(): Promise<void> {
     this.logoutCalls += 1;
+    if (this.logoutFails) {
+      if (this.logoutEndsLocallyBeforeFailure) this.endSession();
+      return Promise.reject(new Error('Hanko unavailable'));
+    }
     this.endSession();
     return Promise.resolve();
   }
