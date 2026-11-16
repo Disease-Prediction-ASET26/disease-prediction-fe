@@ -38,6 +38,10 @@ Routes: `/login` (public), `/onboarding` (first login: name, optional date of bi
 profile and an active consent; the home page stays public. Route guards only shape the UI: the
 backend checks the token on every request.
 
+In the deployed Hanko configuration, an account created with email cannot be connected to
+Google. Use email to sign in to that account. An account created with Google can also use
+email sign-in with the same address. Automatic account linking is disabled.
+
 If the backend reports an unverified primary email, the app opens Hanko's sign-in settings so
 the user can verify it. The user then signs out and signs in again to obtain a session with an
 updated email claim. If sign-out fails, the app warns that the server session may still be active
@@ -132,13 +136,28 @@ rebuild.
 `/api` proxy. Do not put secrets in `VITE_` values: they are in the browser
 bundle.
 
-The Nginx images send a **report-only** Content Security Policy (CSP). Its Hanko connection
-origin defaults to the image's `VITE_HANKO_API_URL` build argument and can be changed at runtime
-with `CSP_HANKO_ORIGIN`; this does not change the frontend bundle. The policy allows inline
-styles because Hanko Elements injects them. It currently reports violations in the browser console
-only and does not block them. Check registration, Google login, passkeys, profile settings and
-logout in a browser before enforcing the policy. If `VITE_API_BASE_URL` points to a different
-origin, update the policy before enforcement.
+The development Nginx image enforces a Content Security Policy (CSP). The production image
+defaults to report-only. To change the mode, set `CSP_HEADER_NAME` at runtime to either
+`Content-Security-Policy` or `Content-Security-Policy-Report-Only` and restart the container.
+The policy permits the Hanko origin set by `VITE_HANKO_API_URL` at build time. You can override
+that origin with `CSP_HANKO_ORIGIN` at runtime; this does not change the frontend bundle. If
+`VITE_API_BASE_URL` points to another origin, update the policy before enforcement.
+
+Nginx adds a per-request script nonce for Cloudflare's injected security script. HTML responses
+use `no-store` so a cached response cannot reuse the nonce. The policy permits inline styles for
+Hanko Elements. Production remains report-only until registration, Google login, passkeys,
+profile settings and logout have been checked in that environment. Report-only violations appear
+in the browser console; the app does not collect reports.
+
+To check the policy headers locally, run from this repository root:
+
+```bash
+docker build -f Dockerfile.dev -t pocket-csp-frontend:dev .
+docker build -f Dockerfile.prod -t pocket-csp-frontend:prod .
+python3 tests/csp_headers.py
+```
+
+These checks do not replace a browser test through Cloudflare and Hanko.
 
 ## Scripts
 
