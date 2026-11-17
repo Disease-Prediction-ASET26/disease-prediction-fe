@@ -39,6 +39,12 @@ export class HankoAuthClient implements AuthClient {
     return token ? token : null;
   }
 
+  async waitForSessionToken(): Promise<string | null> {
+    const hanko = await this.ready;
+    const token = hanko.getSessionToken();
+    return token ? token : null;
+  }
+
   async hasSession(): Promise<boolean> {
     const hanko = await this.ready;
     if (!hanko.getSessionToken()) return false;

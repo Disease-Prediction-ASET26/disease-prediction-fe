@@ -24,7 +24,7 @@ function ApiClientsProvider({ children }: { children: ReactNode }) {
   const { client, handleUnauthorized } = useAuth();
   const clients = useMemo(() => {
     const authorizedFetch = createAuthorizedFetch(
-      () => client.getSessionToken(),
+      () => client.waitForSessionToken(),
       handleUnauthorized,
     );
     const baseUrl = resolveApiBaseUrl();

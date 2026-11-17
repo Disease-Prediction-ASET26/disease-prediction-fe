@@ -20,6 +20,10 @@ export class FakeAuthClient implements AuthClient {
     return this.token;
   }
 
+  waitForSessionToken(): Promise<string | null> {
+    return Promise.resolve(this.token);
+  }
+
   hasSession(): Promise<boolean> {
     return Promise.resolve(this.token !== null);
   }

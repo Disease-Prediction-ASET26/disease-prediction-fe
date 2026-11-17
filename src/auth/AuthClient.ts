@@ -5,6 +5,12 @@
 export interface AuthClient {
   /** The current session token (JWT) to send as `Authorization: Bearer`, or `null`. */
   getSessionToken(): string | null;
+  /**
+   * The session token once the identity SDK has finished loading, or `null` if there is none.
+   * Unlike {@link getSessionToken} (synchronous), this awaits SDK readiness, so it does not return
+   * `null` merely because the token has not hydrated yet right after login or a page refresh.
+   */
+  waitForSessionToken(): Promise<string | null>;
   /** Whether there is an active session (checked with the identity provider). */
   hasSession(): Promise<boolean>;
   logout(): Promise<void>;
