@@ -441,3 +441,23 @@ hanko-profile {
 .follow-up-actions button {
   min-width: 5rem;
 }
+
+/* Grouped symptom checklist (FR-P1) */
+.checklist-group {
+  margin-top: 1rem;
+}
+
+.checklist-group:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.checklist-group-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
