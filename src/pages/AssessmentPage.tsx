@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { AssessmentInput } from '../application/useAssessment';
 import { useAssessment } from '../application/useAssessment';
 import { EmergencyBanner } from '../components/EmergencyBanner';
+import { FollowUpQuestion } from '../components/FollowUpQuestion';
 import { PredictionResultView } from '../components/PredictionResultView';
 import { SymptomChecklist } from '../components/SymptomChecklist';
 import { SymptomFreeTextInput } from '../components/SymptomFreeTextInput';
@@ -20,20 +21,38 @@ export interface AssessmentPageProps {
  * UC1 — patient triage. Owns the form state, composes the two input modes (FR-P1), and shows the
  * outcome: ranked predictions (FR-P2/P3) or, instead of them, the emergency alert (FR-P5). Contains no navigation,
  * so it can be mounted by a router unchanged.
+ *
+ * FR-P3 adaptive questioning: when a result needs a follow-up, the page keeps the loop inline —
+ * it shows the yes/no question and re-predicts on each answer, and only hands the final result to
+ * {@link AssessmentPageProps.onAssessmentComplete} once no follow-up remains.
  */
 export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
   const [freeText, setFreeText] = useState('');
   const [symptomEntries, setSymptomEntries] = useState<SymptomEntry[]>([]);
-  const { status, data, error, submit } = useAssessment();
+  const { status, data, error, submit, answerFollowUp } = useAssessment();
 
   const input: AssessmentInput = { freeText, symptomEntries, patientId: null };
   const canSubmit = hasAnySymptomSignal({ freeText, symptomEntries });
   const isLoading = status === 'loading';
   const hintId = 'assessment-submit-hint';
 
+  const pendingFollowUp =
+    data?.result?.needsFollowUp && data.result.followUp ? data.result.followUp : null;
+
+  /** Hand a response to the host only when it is final (no pending follow-up, or an emergency). */
+  const completeIfFinal = (response: AssessmentResponse) => {
+    const stillAsking = response.result?.needsFollowUp && response.result.followUp;
+    if (!stillAsking && onAssessmentComplete) onAssessmentComplete(response);
+  };
+
   const send = async () => {
     const response = await submit(input);
-    if (response && onAssessmentComplete) onAssessmentComplete(response);
+    if (response) completeIfFinal(response);
+  };
+
+  const answer = async (present: boolean) => {
+    const response = await answerFollowUp(present);
+    if (response) completeIfFinal(response);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -43,6 +62,8 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
   };
 
   const showInlineResult = status === 'success' && data !== null && !onAssessmentComplete;
+  // The follow-up question shows even in routed mode: the loop runs here before navigation.
+  const showFollowUp = status === 'success' && pendingFollowUp !== null && !data?.emergencyDetected;
 
   return (
     <main className="assessment-page">
@@ -102,6 +123,15 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         <p className="message" role="status">
           Analysing your symptoms…
         </p>
+      )}
+
+      {/* FR-P3: below the confidence threshold, ask one yes/no question and re-predict. */}
+      {showFollowUp && pendingFollowUp && (
+        <FollowUpQuestion
+          followUp={pendingFollowUp}
+          onAnswer={(p) => void answer(p)}
+          disabled={isLoading}
+        />
       )}
 
       {/* FR-P5: a red flag halts prediction; only the 112 alert is shown. */}

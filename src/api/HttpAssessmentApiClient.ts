@@ -1,10 +1,11 @@
-import type { AssessmentRequest, AssessmentResponse } from '../domain/assessment';
+import type { AssessmentRequest, AssessmentResponse, FollowUpRequest } from '../domain/assessment';
 import { isAssessmentResponse } from '../domain/assessment';
 import type { AssessmentApiClient } from './AssessmentApiClient';
 import { NetworkError, UnrecognizedSymptomsError, ValidationError } from './errors';
 import { toProblemError } from './problem';
 
 export const ASSESSMENTS_PATH = '/api/assessments';
+export const FOLLOWUP_PATH = '/api/assessments/followup';
 
 /** Base URL from `VITE_API_BASE_URL`; empty means same-origin (dev proxy or reverse proxy). */
 export function resolveApiBaseUrl(
@@ -14,7 +15,7 @@ export function resolveApiBaseUrl(
 }
 
 /**
- * Adapter: `AssessmentApiClient` over `fetch` to the Java backend's `POST /api/assessments`. In the
+ * Adapter: `AssessmentApiClient` over `fetch` to the Java backend's assessment endpoints. In the
  * app `fetchFn` is the authorized fetch, which adds the session token.
  */
 export class HttpAssessmentApiClient implements AssessmentApiClient {
@@ -29,13 +30,22 @@ export class HttpAssessmentApiClient implements AssessmentApiClient {
     this.fetchFn = fetchFn;
   }
 
-  async submitAssessment(request: AssessmentRequest): Promise<AssessmentResponse> {
+  submitAssessment(request: AssessmentRequest): Promise<AssessmentResponse> {
+    return this.post(ASSESSMENTS_PATH, request);
+  }
+
+  submitFollowUp(request: FollowUpRequest): Promise<AssessmentResponse> {
+    return this.post(FOLLOWUP_PATH, request);
+  }
+
+  /** POST a JSON body to an assessment endpoint and map the response (or error) uniformly. */
+  private async post(path: string, body: unknown): Promise<AssessmentResponse> {
     let response: Response;
     try {
-      response = await this.fetchFn(`${this.baseUrl}${ASSESSMENTS_PATH}`, {
+      response = await this.fetchFn(`${this.baseUrl}${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(request),
+        body: JSON.stringify(body),
       });
     } catch {
       throw new NetworkError();
@@ -58,21 +68,21 @@ export class HttpAssessmentApiClient implements AssessmentApiClient {
       );
     }
 
-    let body: unknown;
+    let parsed: unknown;
     try {
-      body = await response.json();
+      parsed = await response.json();
     } catch {
       throw new NetworkError(
         'The assessment service sent an unreadable response.',
         response.status,
       );
     }
-    if (!isAssessmentResponse(body)) {
+    if (!isAssessmentResponse(parsed)) {
       throw new NetworkError(
         'The assessment service sent an unexpected response.',
         response.status,
       );
     }
-    return body;
+    return parsed;
   }
 }

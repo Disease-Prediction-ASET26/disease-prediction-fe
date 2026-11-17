@@ -99,4 +99,38 @@ describe('HttpAssessmentApiClient', () => {
       expect((error as Error).message).toMatch(message);
     },
   );
+
+  describe('submitFollowUp', () => {
+    const followUpRequest = {
+      confirmedSymptoms: ['itching'],
+      deniedSymptoms: [],
+      answer: { symptom: 'nodal_skin_eruptions', present: true },
+      roundsUsed: 0,
+    };
+
+    it('POSTs the follow-up request as JSON to <base>/api/assessments/followup', async () => {
+      const fetchFn = vi.fn(async () => jsonResponse(predictionResponse));
+      const client = new HttpAssessmentApiClient('http://backend.test', fetchFn);
+
+      await expect(client.submitFollowUp(followUpRequest)).resolves.toEqual(predictionResponse);
+
+      expect(fetchFn).toHaveBeenCalledWith('http://backend.test/api/assessments/followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(followUpRequest),
+      });
+    });
+
+    it('shares the error mapping (400 -> ValidationError)', async () => {
+      const client = new HttpAssessmentApiClient('', async () => jsonResponse({}, 400));
+      await expect(client.submitFollowUp(followUpRequest)).rejects.toBeInstanceOf(ValidationError);
+    });
+
+    it('shares the problem mapping (403 consent-required -> ApiProblemError)', async () => {
+      const client = new HttpAssessmentApiClient('', async () =>
+        jsonResponse(problem(403, 'consent-required'), 403),
+      );
+      await expect(client.submitFollowUp(followUpRequest)).rejects.toBeInstanceOf(ApiProblemError);
+    });
+  });
 });
