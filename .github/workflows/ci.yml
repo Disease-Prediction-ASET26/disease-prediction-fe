@@ -171,7 +171,7 @@ jobs:
     - integration-test
     - sonarqube
     - owasp
-    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/container.yml@8651d87e2c9a0dfcb55fcad9b8e9dfe9885cb75f # GitOps base handling
+    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/container.yml@f90c52c9522b423eb183a9cf166a500ae59ef5ad # SemVer image publishing
     permissions:
       contents: read
       packages: write
@@ -181,6 +181,7 @@ jobs:
       dev-dockerfile: Dockerfile.dev
       production-dockerfile: Dockerfile.prod
       gitops-image-name: frontend
+      version-file: package.json
     secrets: inherit
   ci:
     if: ${{ always() && ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name ==
