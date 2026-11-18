@@ -148,19 +148,13 @@ jobs:
   owasp:
     if: ${{ ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       && github.event.action != 'closed') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        persist-credentials: false
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version-file: .nvmrc
-        cache: npm
-        cache-dependency-path: package-lock.json
-    - run: npm ci
-    - run: npm audit --audit-level=high
+    uses: Disease-Prediction-ASET26/disease-prediction-ci/.github/workflows/dependency-scan.yml@04d1fdf77f2275fcda89725a8797450fa253ff31 # shared advisory policy
+    permissions:
+      contents: read
+      packages: read
+    with:
+      ecosystem: npm
+      build-artifact: ''
   containerize:
     name: containerize / scan
     if: ${{ !cancelled() && ((github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name
