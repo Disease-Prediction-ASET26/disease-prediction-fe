@@ -163,6 +163,15 @@ python3 tests/csp_headers.py
 
 These checks do not replace a browser test through Cloudflare and Hanko.
 
+## CI image versions
+
+The shared CI workflow reads the frontend's SemVer version from `package.json`. Keep the
+`package.json` and `package-lock.json` versions in sync. CI publishes `X.Y.Z` from `main`; bump
+the version before merging a change that needs a new production image. On `develop`, CI publishes
+`X.Y.Z-dev.<shortsha>.<run>.<attempt>`. Pull requests use
+`X.Y.Z-pr.<number>.<shortsha>.<run>.<attempt>`. GitOps deploys the readable tag with its SHA-256
+digest, for example `ghcr.io/disease-prediction-aset26/disease-prediction-fe:0.1.0@sha256:<digest>`.
+
 ## Scripts
 
 | Script                            | What it does                                              |
