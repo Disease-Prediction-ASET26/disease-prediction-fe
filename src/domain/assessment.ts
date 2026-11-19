@@ -41,6 +41,10 @@ export interface DiseasePrediction {
   probability: number;
   diseaseName: string;
   explanation: Explanation | null;
+  /** Human-readable description of the disease, when available. */
+  description?: string | null;
+  /** Recommended precautions for the disease (may be empty or absent). */
+  precautions?: string[];
 }
 
 /** Mirrors `PredictionResultDto`. */

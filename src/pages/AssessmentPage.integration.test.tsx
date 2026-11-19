@@ -42,7 +42,9 @@ describe('AssessmentPage (integration)', () => {
     await userEvent.type(textbox(), 'I have a cough and a headache');
     await userEvent.click(submitButton());
 
-    expect(await screen.findByRole('heading', { name: 'Possible conditions' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Most likely condition' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Common Cold')).toBeInTheDocument();
     expect(screen.getByText('82%')).toBeInTheDocument();
     expect(screen.getByRole('note')).toHaveTextContent('This is not a medical diagnosis');

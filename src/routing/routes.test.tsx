@@ -60,7 +60,7 @@ describe('route model', () => {
   it('/assessment/result with state renders the predictions and disclaimer', () => {
     renderAppAt({ pathname: PATHS.result, state: { assessment: predictionResponse } });
 
-    expect(screen.getByRole('heading', { name: 'Possible conditions' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Most likely condition' })).toBeInTheDocument();
     expect(screen.getByText('Common Cold')).toBeInTheDocument();
     expect(screen.getByRole('note')).toHaveTextContent('This is not a medical diagnosis');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
