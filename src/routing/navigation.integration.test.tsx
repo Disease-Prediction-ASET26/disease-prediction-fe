@@ -25,7 +25,9 @@ describe('navigation flow (integration)', () => {
     await userEvent.type(textbox(), 'I have a cough');
     await submit();
 
-    expect(await screen.findByRole('heading', { name: 'Possible conditions' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Most likely condition' }),
+    ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe(PATHS.result);
     expect(screen.getByText('Common Cold')).toBeInTheDocument();
     expect(screen.getByText('82%')).toBeInTheDocument();
@@ -71,7 +73,7 @@ describe('navigation flow (integration)', () => {
 
     await userEvent.type(textbox(), 'cough');
     await submit();
-    await screen.findByRole('heading', { name: 'Possible conditions' });
+    await screen.findByRole('heading', { name: 'Most likely condition' });
 
     await act(() => router.navigate(-1));
 
@@ -87,7 +89,7 @@ describe('navigation flow (integration)', () => {
     const { router } = renderAppAt(PATHS.assessment);
     await userEvent.type(textbox(), 'cough');
     await submit();
-    await screen.findByRole('heading', { name: 'Possible conditions' });
+    await screen.findByRole('heading', { name: 'Most likely condition' });
 
     await userEvent.click(screen.getByRole('link', { name: 'New assessment' }));
 

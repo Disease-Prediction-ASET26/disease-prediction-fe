@@ -83,7 +83,9 @@ describe('authentication flow (integration)', () => {
 
     await userEvent.type(await textbox(), 'I have a cough');
     await userEvent.click(screen.getByRole('button', { name: 'Get assessment' }));
-    expect(await screen.findByRole('heading', { name: 'Possible conditions' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Most likely condition' }),
+    ).toBeInTheDocument();
     expect(receivedRequests).toHaveLength(1);
   });
 
