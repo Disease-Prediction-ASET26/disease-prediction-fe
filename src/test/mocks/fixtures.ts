@@ -47,6 +47,15 @@ export const emergencyResponse: AssessmentResponse = {
       },
     ],
     highestUrgency: 'EMERGENCY',
+    // Like the real service: a vague emergency set is also low-confidence, so the response still
+    // offers a follow-up question. The emergency must win over the question.
+    needsFollowUp: true,
+    followUp: {
+      symptom: 'sweating',
+      question: 'Are you sweating?',
+      topDisease: 'Heart attack',
+      confidence: 0.41,
+    },
   },
 };
 

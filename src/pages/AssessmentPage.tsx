@@ -39,9 +39,16 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
   const pendingFollowUp =
     data?.result?.needsFollowUp && data.result.followUp ? data.result.followUp : null;
 
-  /** Hand a response to the host only when it is final (no pending follow-up, or an emergency). */
+  /**
+   * Hand a response to the host only when it is final: no pending follow-up, or an EMERGENCY.
+   * An emergency always ends the loop, even when the low-confidence prediction still offers a
+   * follow-up question (FR-P5: the ambulance alert must not wait for more answers).
+   */
   const completeIfFinal = (response: AssessmentResponse) => {
-    const stillAsking = response.result?.needsFollowUp && response.result.followUp;
+    const stillAsking =
+      urgencyOf(response) !== 'EMERGENCY' &&
+      response.result?.needsFollowUp &&
+      response.result.followUp;
     if (!stillAsking && onAssessmentComplete) onAssessmentComplete(response);
   };
 
