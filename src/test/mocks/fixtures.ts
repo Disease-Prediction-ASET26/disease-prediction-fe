@@ -35,6 +35,45 @@ export const emergencyResponse: AssessmentResponse = {
   emergencyDetected: true,
 };
 
+// A low-confidence result that offers a follow-up question (FR-P3).
+export const followUpResponse: AssessmentResponse = {
+  assessmentId: '00000000-0000-4000-8000-000000000004',
+  emergencyDetected: false,
+  result: {
+    resultId: '00000000-0000-4000-8000-000000000005',
+    generatedAt: '2026-10-31T12:00:00Z',
+    disclaimer: 'This is not a medical diagnosis',
+    predictions: [
+      { rank: 1, probability: 0.48, diseaseName: 'Fungal infection', explanation: null },
+    ],
+    activeSymptoms: ['itching'],
+    needsFollowUp: true,
+    followUp: {
+      symptom: 'nodal_skin_eruptions',
+      question: 'Do you also have nodal skin eruptions?',
+      topDisease: 'Fungal infection',
+      confidence: 0.48,
+    },
+  },
+};
+
+// The confident result after the follow-up is answered.
+export const followUpResolvedResponse: AssessmentResponse = {
+  assessmentId: '00000000-0000-4000-8000-000000000006',
+  emergencyDetected: false,
+  result: {
+    resultId: '00000000-0000-4000-8000-000000000007',
+    generatedAt: '2026-10-31T12:00:01Z',
+    disclaimer: 'This is not a medical diagnosis',
+    predictions: [
+      { rank: 1, probability: 0.97, diseaseName: 'Fungal infection', explanation: null },
+    ],
+    activeSymptoms: ['itching', 'nodal_skin_eruptions'],
+    needsFollowUp: false,
+    followUp: null,
+  },
+};
+
 // MDD Iteration 6. Placeholder identity only — no real person.
 export const patientProfile: Profile = {
   id: '00000000-0000-4000-8000-000000000010',

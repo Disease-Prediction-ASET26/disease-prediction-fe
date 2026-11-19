@@ -1,4 +1,4 @@
-import type { AssessmentRequest, AssessmentResponse } from '../domain/assessment';
+import type { AssessmentRequest, AssessmentResponse, FollowUpRequest } from '../domain/assessment';
 
 /**
  * Port for submitting assessments — the frontend counterpart of the backend's `PredictionClient`
@@ -10,4 +10,10 @@ import type { AssessmentRequest, AssessmentResponse } from '../domain/assessment
  */
 export interface AssessmentApiClient {
   submitAssessment(request: AssessmentRequest): Promise<AssessmentResponse>;
+
+  /**
+   * Continue an adaptive assessment: answer a follow-up question and receive an updated result
+   * (which may carry another question). Same error contract as {@link submitAssessment}.
+   */
+  submitFollowUp(request: FollowUpRequest): Promise<AssessmentResponse>;
 }

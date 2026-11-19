@@ -39,4 +39,22 @@ describe('createAuthorizedFetch', () => {
 
     expect(onUnauthorized).not.toHaveBeenCalled();
   });
+
+  it('awaits an async token getter before sending (fixes the post-login token race)', async () => {
+    const fetchFn = vi.fn<typeof fetch>(ok);
+    // The token is not ready synchronously; it resolves on the next tick.
+    const getToken = () => Promise.resolve('late-token');
+
+    await createAuthorizedFetch(getToken, vi.fn(), fetchFn)('/api/me');
+
+    const headers = new Headers(fetchFn.mock.calls[0][1]?.headers);
+    expect(headers.get('Authorization')).toBe('Bearer late-token');
+  });
+
+  it('sends no Authorization header when the async getter resolves null', async () => {
+    const fetchFn = vi.fn<typeof fetch>(ok);
+    await createAuthorizedFetch(() => Promise.resolve(null), vi.fn(), fetchFn)('/api/me');
+
+    expect(new Headers(fetchFn.mock.calls[0][1]?.headers).has('Authorization')).toBe(false);
+  });
 });

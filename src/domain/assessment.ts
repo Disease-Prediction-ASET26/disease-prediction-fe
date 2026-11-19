@@ -49,6 +49,23 @@ export interface PredictionResult {
   generatedAt: string;
   disclaimer: string;
   predictions: DiseasePrediction[];
+  /**
+   * Canonical symptoms currently known present, echoed by the backend so the client can carry
+   * them into a follow-up request. Absent on older responses.
+   */
+  activeSymptoms?: string[];
+  /** True when confidence is below the threshold and a follow-up question is offered. */
+  needsFollowUp?: boolean;
+  /** A yes/no question that would sharpen a low-confidence prediction, or null. */
+  followUp?: FollowUp | null;
+}
+
+/** Mirrors `FollowUp` — a yes/no question about a symptom (FR-P3 adaptive questioning). */
+export interface FollowUp {
+  symptom: string;
+  question: string;
+  topDisease: string;
+  confidence: number;
 }
 
 /** Mirrors `AssessmentResponse`. */
@@ -56,6 +73,23 @@ export interface AssessmentResponse {
   assessmentId: string;
   emergencyDetected: boolean;
   result: PredictionResult | null;
+}
+
+/** The patient's yes/no answer to a follow-up question. Mirrors `FollowupAnswer`. */
+export interface FollowUpAnswer {
+  symptom: string;
+  present: boolean;
+}
+
+/**
+ * Mirrors `FollowupRequest` for `POST /api/assessments/followup`. The loop is stateless on the
+ * server, so the client carries the symptoms confirmed and denied so far plus the latest answer.
+ */
+export interface FollowUpRequest {
+  confirmedSymptoms: string[];
+  deniedSymptoms: string[];
+  answer: FollowUpAnswer | null;
+  roundsUsed: number;
 }
 
 export function isSeverity(value: unknown): value is Severity {

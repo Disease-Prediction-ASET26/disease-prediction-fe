@@ -2,7 +2,9 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import {
+  followUpAssessmentHandler,
   networkErrorHandler,
+  receivedFollowUpRequests,
   receivedRequests,
   serverErrorHandler,
   unrecognizedSymptomsHandler,
@@ -149,5 +151,55 @@ describe('AssessmentPage (integration)', () => {
     await vi.waitFor(() => expect(onAssessmentComplete).toHaveBeenCalledTimes(1));
     expect(onAssessmentComplete.mock.calls[0][0]).toMatchObject({ emergencyDetected: false });
     expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
+  });
+
+  it('low confidence: asks a follow-up, and a "yes" answer sharpens the prediction', async () => {
+    server.use(followUpAssessmentHandler);
+    renderWithSession(<AssessmentPage />);
+
+    await userEvent.type(textbox(), 'itching');
+    await userEvent.click(submitButton());
+
+    // The yes/no question appears alongside the current low-confidence predictions.
+    expect(await screen.findByText('Do you also have nodal skin eruptions?')).toBeInTheDocument();
+    expect(screen.getByText('48%')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Yes' }));
+
+    // The loop resolves: the question is gone and the confident result shows.
+    expect(await screen.findByText('97%')).toBeInTheDocument();
+    expect(screen.getByText('Fungal infection')).toBeInTheDocument();
+    expect(screen.queryByText('Do you also have nodal skin eruptions?')).not.toBeInTheDocument();
+
+    // The follow-up carried the confirmed symptom and the answer across the SOA boundary.
+    expect(receivedFollowUpRequests).toEqual([
+      {
+        confirmedSymptoms: ['itching'],
+        deniedSymptoms: [],
+        answer: { symptom: 'nodal_skin_eruptions', present: true },
+        roundsUsed: 0,
+      },
+    ]);
+  });
+
+  it('does not complete to the host until the follow-up loop resolves', async () => {
+    server.use(followUpAssessmentHandler);
+    const onAssessmentComplete = vi.fn();
+    renderWithSession(<AssessmentPage onAssessmentComplete={onAssessmentComplete} />);
+
+    await userEvent.type(textbox(), 'itching');
+    await userEvent.click(submitButton());
+
+    // A question is pending, so the host is not called yet.
+    expect(await screen.findByText('Do you also have nodal skin eruptions?')).toBeInTheDocument();
+    expect(onAssessmentComplete).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Yes' }));
+
+    // Loop resolved: now the host receives the final, confident result.
+    await vi.waitFor(() => expect(onAssessmentComplete).toHaveBeenCalledTimes(1));
+    expect(onAssessmentComplete.mock.calls[0][0]).toMatchObject({
+      result: { needsFollowUp: false },
+    });
   });
 });

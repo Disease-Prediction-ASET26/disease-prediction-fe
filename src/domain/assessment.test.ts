@@ -1,5 +1,5 @@
 import { hasAnySymptomSignal, isAssessmentResponse, isSeverity } from './assessment';
-import { CHECKLIST_SYMPTOMS, toDisplayName, toSymptomEntry } from './symptoms';
+import { CHECKLIST_SYMPTOMS, SYMPTOM_GROUPS, toDisplayName, toSymptomEntry } from './symptoms';
 import { formatProbability } from './format';
 import { predictionResponse } from '../test/mocks/fixtures';
 
@@ -55,11 +55,23 @@ describe('symptom vocabulary', () => {
     );
   });
 
-  it('offers a curated subset of 10 to 15 unique symptoms', () => {
+  it('offers the symptoms as non-empty named groups', () => {
+    expect(SYMPTOM_GROUPS.length).toBeGreaterThan(1);
+    for (const group of SYMPTOM_GROUPS) {
+      expect(group.title.length).toBeGreaterThan(0);
+      expect(group.options.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('exposes every grouped symptom in the flat list with unique ids', () => {
     const ids = CHECKLIST_SYMPTOMS.map((option) => option.id);
-    expect(ids.length).toBeGreaterThanOrEqual(10);
-    expect(ids.length).toBeLessThanOrEqual(15);
+    const grouped = SYMPTOM_GROUPS.flatMap((group) => group.options.map((o) => o.id));
+    // The flat list is exactly the union of the groups.
+    expect(ids).toEqual(grouped);
+    // No symptom appears twice (which would collide on checkbox id).
     expect(new Set(ids).size).toBe(ids.length);
+    // The checklist is substantial, not a tiny hand-picked subset.
+    expect(ids.length).toBeGreaterThan(100);
   });
 });
 

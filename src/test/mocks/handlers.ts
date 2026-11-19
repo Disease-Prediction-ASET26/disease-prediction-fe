@@ -1,15 +1,25 @@
 import { http, HttpResponse } from 'msw';
-import type { AssessmentRequest } from '../../domain/assessment';
+import type { AssessmentRequest, FollowUpRequest } from '../../domain/assessment';
 import type { CreateProfileRequest, Profile } from '../../domain/profile';
 import { TEST_TOKEN } from '../FakeAuthClient';
-import { emergencyResponse, patientProfile, predictionResponse, problem } from './fixtures';
+import {
+  emergencyResponse,
+  followUpResolvedResponse,
+  followUpResponse,
+  patientProfile,
+  predictionResponse,
+  problem,
+} from './fixtures';
 
 export const ASSESSMENTS_URL = '*/api/assessments';
+export const FOLLOWUP_URL = '*/api/assessments/followup';
 export const PROFILE_URL = '*/api/me';
 export const CONSENTS_URL = '*/api/me/consents';
 
 /** Records the bodies the app sent, so tests can assert on the wire contract. */
 export const receivedRequests: AssessmentRequest[] = [];
+/** Follow-up request bodies the app sent, for asserting the carried symptom sets. */
+export const receivedFollowUpRequests: FollowUpRequest[] = [];
 /** Profile requests the app sent (method, path, body). */
 export const receivedProfileRequests: { method: string; path: string; body: unknown }[] = [];
 
@@ -61,6 +71,24 @@ export const handlers = [
     }
     backend.profile = { ...backend.profile, consentGranted: body.granted };
     return HttpResponse.json(backend.profile, { status: 201 });
+  }),
+  http.post(FOLLOWUP_URL, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    if (!backend.profile) {
+      return HttpResponse.json(problem(403, 'profile-required'), { status: 403 });
+    }
+    if (!backend.profile.consentGranted) {
+      return HttpResponse.json(problem(403, 'consent-required'), { status: 403 });
+    }
+    const body = (await request.json()) as FollowUpRequest;
+    receivedFollowUpRequests.push(body);
+    if (!Array.isArray(body.confirmedSymptoms) || body.confirmedSymptoms.length === 0) {
+      return HttpResponse.json({ status: 400 }, { status: 400 });
+    }
+    // A "yes" to the offered symptom resolves the loop; otherwise keep asking.
+    const confirmedTheSymptom = body.answer?.present === true;
+    return HttpResponse.json(confirmedTheSymptom ? followUpResolvedResponse : followUpResponse);
   }),
   http.post(ASSESSMENTS_URL, async ({ request }) => {
     const denied = unauthorized(request);
@@ -117,3 +145,10 @@ export const sessionEndedHandler = http.post(ASSESSMENTS_URL, () =>
 export const profileServerErrorHandler = http.get(PROFILE_URL, () =>
   HttpResponse.json({ status: 503 }, { status: 503 }),
 );
+
+/** Makes the initial assessment return a low-confidence result that offers a follow-up (FR-P3). */
+export const followUpAssessmentHandler = http.post(ASSESSMENTS_URL, async ({ request }) => {
+  const body = (await request.json()) as AssessmentRequest;
+  receivedRequests.push(body);
+  return HttpResponse.json(followUpResponse);
+});
