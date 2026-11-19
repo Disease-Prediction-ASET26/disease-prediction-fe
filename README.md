@@ -202,7 +202,7 @@ src/
 ├─ auth/          AuthClient port, HankoAuthClient adapter, AuthProvider (session state)
 ├─ api/           Assessment and Profile API ports + HTTP adapters, authorized fetch, errors
 ├─ application/   useAssessment hook, ProfileProvider (profile + consent state)
-├─ components/    SymptomFreeTextInput, SymptomChecklist, SeveritySelect, PredictionResultView, EmergencyBanner
+├─ components/    SymptomFreeTextInput, SymptomChecklist, PredictionResultView, EmergencyBanner
 ├─ pages/         AssessmentPage
 ├─ routing/       route model, RootLayout, guards, routes (home, login, onboarding, account, assessment, result, emergency, 404)
 └─ test/          test setup + MSW handlers/fixtures

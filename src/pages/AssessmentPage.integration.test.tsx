@@ -57,10 +57,6 @@ describe('AssessmentPage (integration)', () => {
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Cough' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Headache' }));
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'Severity of Headache' }),
-      'SEVERE',
-    );
     await userEvent.click(submitButton());
 
     expect(await screen.findByText('Common Cold')).toBeVisible();
@@ -70,7 +66,7 @@ describe('AssessmentPage (integration)', () => {
         freeText: '',
         symptomEntries: [
           { rawText: 'cough', severity: 'MODERATE', durationDays: 0, isMapped: true },
-          { rawText: 'headache', severity: 'SEVERE', durationDays: 0, isMapped: true },
+          { rawText: 'headache', severity: 'MODERATE', durationDays: 0, isMapped: true },
         ],
       },
     ]);

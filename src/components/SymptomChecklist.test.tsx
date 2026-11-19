@@ -64,21 +64,4 @@ describe('SymptomChecklist', () => {
       { rawText: 'headache', severity: 'MODERATE', durationDays: 0, isMapped: true },
     ]);
   });
-
-  it('shows a severity select only for checked items and updates that entry', async () => {
-    const onEntries = vi.fn();
-    render(<ControlledChecklist onEntries={onEntries} />);
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Cough' }));
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'Severity of Cough' }),
-      'SEVERE',
-    );
-
-    expect(screen.getAllByRole('combobox')).toHaveLength(1);
-    expect(onEntries).toHaveBeenLastCalledWith([
-      { rawText: 'cough', severity: 'SEVERE', durationDays: 0, isMapped: true },
-    ]);
-  });
 });
