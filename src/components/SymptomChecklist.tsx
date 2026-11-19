@@ -1,8 +1,7 @@
 import { useId } from 'react';
-import type { Severity, SymptomEntry } from '../domain/assessment';
+import type { SymptomEntry } from '../domain/assessment';
 import type { SymptomGroup, SymptomOption } from '../domain/symptoms';
 import { SYMPTOM_GROUPS, toSymptomEntry } from '../domain/symptoms';
-import { SeveritySelect } from './SeveritySelect';
 
 export interface SymptomChecklistProps {
   /** The current selection, as the `symptomEntries` that will be sent. */
@@ -12,7 +11,7 @@ export interface SymptomChecklistProps {
   disabled?: boolean;
 }
 
-/** FR-P1: structured checklist of known symptoms, grouped by body system, each with its severity. */
+/** FR-P1: structured checklist of known symptoms, grouped by body system. */
 export function SymptomChecklist({
   value,
   onChange,
@@ -28,10 +27,6 @@ export function SymptomChecklist({
     } else {
       onChange([...value, toSymptomEntry(option)]);
     }
-  };
-
-  const changeSeverity = (option: SymptomOption, severity: Severity) => {
-    onChange(value.map((entry) => (entry.rawText === option.id ? { ...entry, severity } : entry)));
   };
 
   return (
@@ -57,14 +52,6 @@ export function SymptomChecklist({
                     onChange={() => toggle(option)}
                   />
                   <label htmlFor={checkboxId}>{option.label}</label>
-                  {entry && (
-                    <SeveritySelect
-                      symptomLabel={option.label}
-                      value={entry.severity}
-                      disabled={disabled}
-                      onChange={(severity) => changeSeverity(option, severity)}
-                    />
-                  )}
                 </li>
               );
             })}
