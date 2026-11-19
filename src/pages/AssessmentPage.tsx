@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import type { AssessmentInput } from '../application/useAssessment';
 import { useAssessment } from '../application/useAssessment';
-import { EmergencyBanner } from '../components/EmergencyBanner';
 import { FollowUpQuestion } from '../components/FollowUpQuestion';
 import { PredictionResultView } from '../components/PredictionResultView';
 import { SymptomChecklist } from '../components/SymptomChecklist';
 import { SymptomFreeTextInput } from '../components/SymptomFreeTextInput';
+import { UrgencyBanner } from '../components/UrgencyBanner';
 import type { AssessmentResponse, SymptomEntry } from '../domain/assessment';
-import { hasAnySymptomSignal } from '../domain/assessment';
+import { hasAnySymptomSignal, urgencyOf } from '../domain/assessment';
 
 export interface AssessmentPageProps {
   /**
@@ -62,8 +62,10 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
   };
 
   const showInlineResult = status === 'success' && data !== null && !onAssessmentComplete;
+  const urgency = data ? urgencyOf(data) : null;
+  const isEmergency = urgency === 'EMERGENCY';
   // The follow-up question shows even in routed mode: the loop runs here before navigation.
-  const showFollowUp = status === 'success' && pendingFollowUp !== null && !data?.emergencyDetected;
+  const showFollowUp = status === 'success' && pendingFollowUp !== null && !isEmergency;
 
   return (
     <main className="assessment-page">
@@ -73,7 +75,7 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         list, or both.
       </p>
 
-      {showInlineResult && <EmergencyBanner visible={data.emergencyDetected} />}
+      {showInlineResult && <UrgencyBanner urgency={urgency} redFlags={data.result?.redFlags} />}
 
       <form onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
         <SymptomFreeTextInput value={freeText} onChange={setFreeText} disabled={isLoading} />
@@ -134,8 +136,8 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         />
       )}
 
-      {/* FR-P5: a red flag halts prediction; only the 112 alert is shown. */}
-      {showInlineResult && data.result && !data.emergencyDetected && (
+      {/* FR-P5: an EMERGENCY halts prediction; only the ambulance (112) alert is shown. */}
+      {showInlineResult && data.result && !isEmergency && (
         <PredictionResultView result={data.result} />
       )}
     </main>

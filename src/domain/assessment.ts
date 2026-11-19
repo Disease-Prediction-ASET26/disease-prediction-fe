@@ -62,6 +62,26 @@ export interface PredictionResult {
   needsFollowUp?: boolean;
   /** A yes/no question that would sharpen a low-confidence prediction, or null. */
   followUp?: FollowUp | null;
+  /** Red-flag rules fired by the active symptoms, most urgent first. Absent on older responses. */
+  redFlags?: RedFlag[];
+  /** Most severe urgency among `redFlags`; null/absent when none fired. */
+  highestUrgency?: Urgency | null;
+}
+
+export const URGENCIES = ['EMERGENCY', 'URGENT', 'ADVISORY'] as const;
+
+/**
+ * Mirrors `Urgency`. EMERGENCY = call an ambulance (112); URGENT = see a doctor promptly;
+ * ADVISORY = worth mentioning. Computed by the prediction service from the symptoms.
+ */
+export type Urgency = (typeof URGENCIES)[number];
+
+/** Mirrors `RedFlag` — a red-flag rule that fired. */
+export interface RedFlag {
+  name: string;
+  urgency: Urgency;
+  message: string;
+  matchedSymptoms: string[];
 }
 
 /** Mirrors `FollowUp` — a yes/no question about a symptom (FR-P3 adaptive questioning). */
@@ -123,4 +143,14 @@ export function isAssessmentResponse(value: unknown): value is AssessmentRespons
   if (typeof candidate.result !== 'object' || candidate.result === undefined) return false;
   const result = candidate.result as Record<string, unknown>;
   return typeof result.disclaimer === 'string' && Array.isArray(result.predictions);
+}
+
+/**
+ * The urgency to act on for a response: the relayed `result.highestUrgency`, falling back to
+ * `emergencyDetected` for older backends that only send the boolean.
+ */
+export function urgencyOf(response: AssessmentResponse): Urgency | null {
+  const relayed = response.result?.highestUrgency;
+  if (relayed) return relayed;
+  return response.emergencyDetected ? 'EMERGENCY' : null;
 }

@@ -1,7 +1,7 @@
-import { hasAnySymptomSignal, isAssessmentResponse, isSeverity } from './assessment';
+import { hasAnySymptomSignal, isAssessmentResponse, isSeverity, urgencyOf } from './assessment';
 import { CHECKLIST_SYMPTOMS, SYMPTOM_GROUPS, toDisplayName, toSymptomEntry } from './symptoms';
 import { formatProbability } from './format';
-import { predictionResponse } from '../test/mocks/fixtures';
+import { emergencyResponse, predictionResponse, urgentResponse } from '../test/mocks/fixtures';
 
 describe('hasAnySymptomSignal (mirrors AssessmentRequest.hasAnySymptomSignal)', () => {
   const entry = toSymptomEntry({ id: 'cough', label: 'Cough' });
@@ -85,5 +85,20 @@ describe('formatProbability', () => {
     [Number.NaN, '0%'],
   ])('%s -> %s', (probability, expected) => {
     expect(formatProbability(probability)).toBe(expected);
+  });
+});
+
+describe('urgencyOf', () => {
+  it('uses the relayed highestUrgency', () => {
+    expect(urgencyOf(emergencyResponse)).toBe('EMERGENCY');
+    expect(urgencyOf(urgentResponse)).toBe('URGENT');
+    expect(urgencyOf(predictionResponse)).toBeNull();
+  });
+
+  it('falls back to emergencyDetected for older responses without highestUrgency', () => {
+    expect(urgencyOf({ ...predictionResponse, emergencyDetected: true })).toBe('EMERGENCY');
+    expect(urgencyOf({ assessmentId: 'x', emergencyDetected: true, result: null })).toBe(
+      'EMERGENCY',
+    );
   });
 });

@@ -4,6 +4,7 @@ import type { CreateProfileRequest, Profile } from '../../domain/profile';
 import { TEST_TOKEN } from '../FakeAuthClient';
 import {
   emergencyResponse,
+  urgentResponse,
   followUpResolvedResponse,
   followUpResponse,
   patientProfile,
@@ -35,7 +36,10 @@ function unauthorized(request: Request) {
   });
 }
 
-/** Default: behaves like the backend — 400 on no symptom signal, emergency on "chest pain". */
+/**
+ * Default: behaves like the backend — 400 on no symptom signal, EMERGENCY urgency on "chest pain",
+ * URGENT on "high fever".
+ */
 export const handlers = [
   http.get(PROFILE_URL, ({ request }) => {
     const denied = unauthorized(request);
@@ -118,7 +122,11 @@ export const handlers = [
     const mentionsChestPain =
       body.freeText.toLowerCase().includes('chest pain') ||
       body.symptomEntries.some((entry) => entry.rawText === 'chest_pain');
-    return HttpResponse.json(mentionsChestPain ? emergencyResponse : predictionResponse);
+    if (mentionsChestPain) return HttpResponse.json(emergencyResponse);
+    const mentionsHighFever =
+      body.freeText.toLowerCase().includes('high fever') ||
+      body.symptomEntries.some((entry) => entry.rawText === 'high_fever');
+    return HttpResponse.json(mentionsHighFever ? urgentResponse : predictionResponse);
   }),
 ];
 

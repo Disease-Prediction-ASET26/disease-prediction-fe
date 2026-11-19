@@ -1,9 +1,10 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { EmergencyBanner } from '../../components/EmergencyBanner';
+import { UrgencyBanner } from '../../components/UrgencyBanner';
 import { PATHS, readAssessmentState } from '../paths';
 
 /**
- * `/assessment/emergency` — FR-P5 / UC2. A red flag halts prediction: only the 112 alert is shown,
+ * `/assessment/emergency` — FR-P5 / UC2. Urgency EMERGENCY halts prediction: only the ambulance
+ * (112) alert and the red flags behind it are shown,
  * with no route to the predictions. Without router state it redirects to the form, like the result
  * route.
  */
@@ -16,7 +17,7 @@ export function EmergencyRoute() {
   return (
     <main className="emergency-page">
       <h1>Get help now</h1>
-      <EmergencyBanner visible />
+      <UrgencyBanner urgency="EMERGENCY" redFlags={assessment.result?.redFlags} />
       <p>
         <Link to={PATHS.assessment}>Start a new assessment</Link>
       </p>
