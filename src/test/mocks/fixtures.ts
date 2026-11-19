@@ -35,6 +35,38 @@ export const emergencyResponse: AssessmentResponse = {
   ...predictionResponse,
   assessmentId: '00000000-0000-4000-8000-000000000003',
   emergencyDetected: true,
+  result: {
+    ...predictionResponse.result!,
+    redFlags: [
+      {
+        name: 'possible_cardiac_event',
+        urgency: 'EMERGENCY',
+        message:
+          'Chest pain with breathlessness or sweating may be a heart emergency. Call emergency services (112) or go to the nearest emergency department now.',
+        matchedSymptoms: ['breathlessness', 'chest_pain'],
+      },
+    ],
+    highestUrgency: 'EMERGENCY',
+  },
+};
+
+// A single serious symptom: see a doctor promptly, not an ambulance.
+export const urgentResponse: AssessmentResponse = {
+  ...predictionResponse,
+  assessmentId: '00000000-0000-4000-8000-000000000005',
+  emergencyDetected: false,
+  result: {
+    ...predictionResponse.result!,
+    redFlags: [
+      {
+        name: 'high_fever',
+        urgency: 'URGENT',
+        message: 'A high fever. See a doctor promptly today; seek emergency care if it gets worse.',
+        matchedSymptoms: ['high_fever'],
+      },
+    ],
+    highestUrgency: 'URGENT',
+  },
 };
 
 // A low-confidence result that offers a follow-up question (FR-P3).

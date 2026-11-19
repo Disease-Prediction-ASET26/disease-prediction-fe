@@ -12,6 +12,9 @@
   --error-border: #d04848;
   --emergency-bg: #b3261e;
   --emergency-text: #ffffff;
+  --urgent-bg: #fff1d6;
+  --urgent-border: #d98e04;
+  --urgent-text: #4a3000;
 
   color-scheme: light dark;
   font-family:
@@ -38,6 +41,9 @@
     --warning-border: #b28a2e;
     --error-bg: #3b1a1a;
     --error-border: #c25454;
+    --urgent-bg: #3d2a06;
+    --urgent-border: #d9a13a;
+    --urgent-text: #ffe3ad;
   }
 }
 
@@ -209,6 +215,32 @@ textarea:focus-visible {
   color: inherit;
   font-weight: 700;
   font-size: 1.2em;
+}
+
+.urgent-banner {
+  background: var(--urgent-bg);
+  color: var(--urgent-text);
+  border: 1px solid var(--urgent-border);
+  border-left-width: 6px;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.urgent-banner h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+.urgent-banner a {
+  color: inherit;
+  font-weight: 700;
+}
+
+.urgency-reasons {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.95rem;
 }
 
 .result {

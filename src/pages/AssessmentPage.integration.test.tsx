@@ -82,6 +82,12 @@ describe('AssessmentPage (integration)', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('112');
+    expect(
+      screen.getByRole('heading', { name: 'Call an ambulance (112) now' }),
+    ).toBeInTheDocument();
+    // The ambulance alert leads the page: it comes before the symptom form.
+    const form = screen.getByRole('button', { name: 'Get assessment' });
+    expect(alert.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     // FR-P5: prediction output is halted, not just collapsed.
     expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
     expect(screen.queryByText(/assessment details/i)).not.toBeInTheDocument();
