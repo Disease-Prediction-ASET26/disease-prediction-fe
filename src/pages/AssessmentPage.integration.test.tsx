@@ -22,12 +22,14 @@ import { AssessmentPage } from './AssessmentPage';
 describe('AssessmentPage (integration)', () => {
   const submitButton = () => screen.getByRole('button', { name: 'Get assessment' });
   const textbox = () => screen.getByRole('textbox', { name: 'Describe your symptoms' });
+  const switchToChecklist = () =>
+    userEvent.click(screen.getByRole('radio', { name: 'Choose from a list' }));
 
   it('keeps submit disabled until there is a symptom signal', async () => {
     renderWithSession(<AssessmentPage />);
 
     expect(submitButton()).toBeDisabled();
-    expect(screen.getByText(/select at least one from the list to continue/)).toBeInTheDocument();
+    expect(screen.getByText(/Describe your symptoms to continue/)).toBeInTheDocument();
 
     await userEvent.type(textbox(), '   ');
     expect(submitButton()).toBeDisabled();
@@ -58,6 +60,7 @@ describe('AssessmentPage (integration)', () => {
   it('checklist only: submits mapped symptom entries and renders the predictions', async () => {
     renderWithSession(<AssessmentPage />);
 
+    await switchToChecklist();
     await userEvent.click(screen.getByRole('checkbox', { name: 'Cough' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Headache' }));
     await userEvent.click(submitButton());
@@ -78,6 +81,7 @@ describe('AssessmentPage (integration)', () => {
   it('emergency response: shows the 112 alert and halts the predictions', async () => {
     renderWithSession(<AssessmentPage />);
 
+    await switchToChecklist();
     await userEvent.click(screen.getByRole('checkbox', { name: 'Chest pain' }));
     await userEvent.click(submitButton());
 

@@ -889,6 +889,54 @@ form button:disabled,
   margin-bottom: 1.25rem;
 }
 
+/* Input-mode selector: a radio group styled as a segmented control. The native
+   radios stay accessible (keyboard + screen reader); only their box is hidden. */
+.input-mode .segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border, #d0d5dd);
+  border-radius: 10px;
+  background: var(--surface-muted, #f2f4f7);
+}
+
+.input-mode .segment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text, #344054);
+  cursor: pointer;
+  user-select: none;
+}
+
+.input-mode .segment input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.input-mode .segment.is-active {
+  background: var(--surface, #ffffff);
+  color: var(--text-strong, #101828);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+}
+
+.input-mode .segment:focus-within {
+  outline: 2px solid var(--focus, #2563eb);
+  outline-offset: 2px;
+}
+
 .field > label,
 fieldset legend {
   display: block;
