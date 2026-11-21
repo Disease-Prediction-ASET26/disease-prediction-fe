@@ -16,6 +16,7 @@ FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:0ec17b0dac55776357d46d882
 ARG VITE_HANKO_API_URL=https://identity.pocket-doc.app
 USER root
 RUN apk upgrade --no-cache \
+    && apk add --no-cache --upgrade 'libxml2>=2.13.9-r3' \
     && sed -i '1i load_module modules/ngx_http_js_module.so;' /etc/nginx/nginx.conf
 USER 101
 ENV API_UPSTREAM=http://backend:8080 \
