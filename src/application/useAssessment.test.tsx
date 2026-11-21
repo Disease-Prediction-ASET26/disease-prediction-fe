@@ -14,6 +14,10 @@ function fakeClient(
   return {
     submitAssessment: vi.fn(impl),
     submitFollowUp: vi.fn(followUpImpl ?? (async () => predictionResponse)),
+    listAssessments: vi.fn(async () => []),
+    getAssessment: vi.fn(async () => {
+      throw new Error('not used');
+    }),
   };
 }
 

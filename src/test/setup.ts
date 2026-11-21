@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
-import { patientProfile } from './mocks/fixtures';
+import { patientProfile, storedAssessmentDetail, storedAssessments } from './mocks/fixtures';
 import {
   backend,
   receivedFollowUpRequests,
@@ -19,6 +19,8 @@ afterEach(() => {
   receivedFollowUpRequests.length = 0;
   receivedProfileRequests.length = 0;
   backend.profile = { ...patientProfile };
+  backend.assessments = [...storedAssessments];
+  backend.details = [storedAssessmentDetail];
 });
 
 afterAll(() => server.close());

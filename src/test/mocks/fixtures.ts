@@ -1,4 +1,5 @@
 import type { AssessmentResponse } from '../../domain/assessment';
+import type { AssessmentDetail, AssessmentSummary } from '../../domain/history';
 import type { Profile } from '../../domain/profile';
 
 // Placeholder identifiers only — no real patient data.
@@ -136,3 +137,62 @@ export function problem(status: number, code: string) {
     code,
   };
 }
+
+// Stored assessments (GET /api/assessments, backend MDD Iteration 7). Placeholder ids only.
+export const storedAssessments: AssessmentSummary[] = [
+  {
+    id: '00000000-0000-4000-8000-000000000101',
+    status: 'COMPLETED',
+    createdAt: '2026-11-20T09:42:00Z',
+    updatedAt: '2026-11-20T09:44:00Z',
+    followUpRounds: 2,
+    topDisease: 'Migraine',
+    topProbability: 0.72,
+    highestUrgency: 'URGENT',
+    reportStatus: 'DRAFT',
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000102',
+    status: 'COMPLETED',
+    createdAt: '2026-11-02T15:10:00Z',
+    updatedAt: '2026-11-02T15:10:00Z',
+    followUpRounds: 0,
+    topDisease: 'Common Cold',
+    topProbability: 0.82,
+    highestUrgency: null,
+    reportStatus: 'REVIEWED',
+  },
+];
+
+export const storedAssessmentDetail: AssessmentDetail = {
+  id: storedAssessments[0].id,
+  status: 'COMPLETED',
+  createdAt: storedAssessments[0].createdAt,
+  updatedAt: storedAssessments[0].updatedAt,
+  followUpRounds: 2,
+  freeText: 'Strong headache since yesterday, bright light makes it worse.',
+  symptomEntries: [],
+  confirmedSymptoms: ['headache', 'nausea'],
+  deniedSymptoms: ['high_fever'],
+  result: {
+    ...predictionResponse.result!,
+    predictions: [
+      {
+        rank: 1,
+        probability: 0.72,
+        diseaseName: 'Migraine',
+        description: 'A headache that can cause intense throbbing pain.',
+        precautions: ['rest in a dark room'],
+        explanation: null,
+      },
+    ],
+    redFlags: urgentResponse.result!.redFlags,
+    highestUrgency: 'URGENT',
+  },
+  report: {
+    id: '00000000-0000-4000-8000-000000000201',
+    status: 'DRAFT',
+    createdAt: storedAssessments[0].createdAt,
+    sentAt: null,
+  },
+};

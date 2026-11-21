@@ -13,7 +13,7 @@ describe('navigation flow (integration)', () => {
   it('home → assessment via the call to action', async () => {
     const { router } = renderAppAt(PATHS.home);
 
-    await userEvent.click(screen.getByRole('link', { name: 'Start an assessment' }));
+    await userEvent.click(screen.getByRole('link', { name: /Start a new assessment/ }));
 
     expect(router.state.location.pathname).toBe(PATHS.assessment);
     expect(textbox()).toBeInTheDocument();

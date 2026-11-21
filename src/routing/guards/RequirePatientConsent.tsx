@@ -11,7 +11,7 @@ export function RequirePatientConsent() {
 
   if (profile && profile.role !== 'PATIENT') {
     return (
-      <main>
+      <main className="narrow-page">
         <h1>Assessments are for patients</h1>
         <p>Your account is not a patient account, so it cannot start an assessment.</p>
       </main>
@@ -19,13 +19,13 @@ export function RequirePatientConsent() {
   }
   if (profile && !profile.consentGranted) {
     return (
-      <main>
+      <main className="narrow-page">
         <h1>Consent needed</h1>
         <p>
           You have withdrawn your consent to processing your health data, so you cannot start an
           assessment.
         </p>
-        <Link className="button-link" to={PATHS.account}>
+        <Link className="button primary" to={PATHS.account}>
           Review consent on your account page
         </Link>
       </main>

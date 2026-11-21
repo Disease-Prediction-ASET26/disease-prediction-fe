@@ -1,5 +1,6 @@
 import type { RedFlag, Urgency } from '../domain/assessment';
 import { EMERGENCY_NUMBER } from './EmergencyBanner';
+import { Icon } from './ui/Icon';
 
 export interface UrgencyBannerProps {
   /** Highest urgency from the prediction service; nothing is shown for null or ADVISORY. */
@@ -23,25 +24,31 @@ export function UrgencyBanner({ urgency, redFlags = [] }: UrgencyBannerProps) {
   if (urgency === 'EMERGENCY') {
     return (
       <div className="emergency-banner" role="alert">
-        <h2>Call an ambulance ({EMERGENCY_NUMBER}) now</h2>
-        <p>
-          Call <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a> or go to the nearest
-          emergency department now. Do not wait for an online assessment.
-        </p>
-        <Reasons reasons={reasons} />
+        <Icon name="alert" size={26} />
+        <div>
+          <h2>Call an ambulance ({EMERGENCY_NUMBER}) now</h2>
+          <p>
+            Call <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a> or go to the nearest
+            emergency department now. Do not wait for an online assessment.
+          </p>
+          <Reasons reasons={reasons} />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="urgent-banner" role="status">
-      <h2>See a doctor promptly</h2>
-      <p>
-        Book an appointment with a doctor today. If your symptoms get worse, call{' '}
-        <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a> or go to the nearest emergency
-        department.
-      </p>
-      <Reasons reasons={reasons} />
+      <Icon name="alert" size={24} />
+      <div>
+        <h2>See a doctor promptly</h2>
+        <p>
+          Book an appointment with a doctor today. If your symptoms get worse, call{' '}
+          <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a> or go to the nearest emergency
+          department.
+        </p>
+        <Reasons reasons={reasons} />
+      </div>
     </div>
   );
 }

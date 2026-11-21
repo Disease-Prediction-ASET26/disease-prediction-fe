@@ -54,12 +54,17 @@ export function OnboardingRoute() {
   };
 
   return (
-    <main className="onboarding-page">
+    <main className="narrow-page onboarding-page">
       <h1>Complete your profile</h1>
       <p className="lede">
         One step before your first assessment. Your name and date of birth are stored encrypted.
       </p>
-      <form onSubmit={(event) => void handleSubmit(event)} noValidate aria-busy={submitting}>
+      <form
+        className="form-card"
+        onSubmit={(event) => void handleSubmit(event)}
+        noValidate
+        aria-busy={submitting}
+      >
         <div className="field">
           <label htmlFor={`${id}-name`}>Full name</label>
           <input

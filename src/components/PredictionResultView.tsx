@@ -29,7 +29,7 @@ export function PredictionResultView({ result }: PredictionResultViewProps) {
       {topPrediction === null ? (
         <p>No likely conditions were identified from the symptoms provided.</p>
       ) : (
-        <article className="prediction">
+        <article className="prediction result-card">
           <div className="prediction-header">
             <h3>{topPrediction.diseaseName}</h3>
             <span

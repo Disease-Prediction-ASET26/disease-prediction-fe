@@ -29,7 +29,7 @@ export function LoginRoute() {
   if (status === 'loading') return <LoadingView />;
 
   return (
-    <main className="auth-page">
+    <main className="narrow-page auth-page">
       <h1>Sign in</h1>
       <p className="lede">
         Sign in or create an account to check your symptoms. Your assessments are linked to your

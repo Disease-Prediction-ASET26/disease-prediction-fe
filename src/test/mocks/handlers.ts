@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { AssessmentRequest, FollowUpRequest } from '../../domain/assessment';
+import type { AssessmentDetail, AssessmentSummary } from '../../domain/history';
 import type { CreateProfileRequest, Profile } from '../../domain/profile';
 import { TEST_TOKEN } from '../FakeAuthClient';
 import {
@@ -10,6 +11,8 @@ import {
   patientProfile,
   predictionResponse,
   problem,
+  storedAssessmentDetail,
+  storedAssessments,
 } from './fixtures';
 
 export const ASSESSMENTS_URL = '*/api/assessments';
@@ -25,7 +28,15 @@ export const receivedFollowUpRequests: FollowUpRequest[] = [];
 export const receivedProfileRequests: { method: string; path: string; body: unknown }[] = [];
 
 /** The profile the fake backend returns; `null` = first login (404). Reset after each test. */
-export const backend: { profile: Profile | null } = { profile: { ...patientProfile } };
+export const backend: {
+  profile: Profile | null;
+  assessments: AssessmentSummary[];
+  details: AssessmentDetail[];
+} = {
+  profile: { ...patientProfile },
+  assessments: [...storedAssessments],
+  details: [storedAssessmentDetail],
+};
 
 /** Like the backend since Iteration 6: no valid Bearer token → 401 problem. */
 function unauthorized(request: Request) {
@@ -41,6 +52,19 @@ function unauthorized(request: Request) {
  * URGENT on "high fever".
  */
 export const handlers = [
+  http.get(ASSESSMENTS_URL, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    return HttpResponse.json(backend.assessments);
+  }),
+  http.get(`${ASSESSMENTS_URL}/:assessmentId`, ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const detail = backend.details.find((item) => item.id === params.assessmentId);
+    return detail
+      ? HttpResponse.json(detail)
+      : HttpResponse.json(problem(404, 'assessment-not-found'), { status: 404 });
+  }),
   http.get(PROFILE_URL, ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
