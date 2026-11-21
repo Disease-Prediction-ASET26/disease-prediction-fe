@@ -110,6 +110,12 @@ export interface FollowUpAnswer {
  * server, so the client carries the symptoms confirmed and denied so far plus the latest answer.
  */
 export interface FollowUpRequest {
+  /**
+   * The stored assessment to continue (backend MDD Iteration 7). With it, the server keeps the
+   * follow-up state and updates that assessment instead of storing a new one per answer; the
+   * symptom sets below are then ignored (still sent for older backends).
+   */
+  assessmentId?: string;
   confirmedSymptoms: string[];
   deniedSymptoms: string[];
   answer: FollowUpAnswer | null;

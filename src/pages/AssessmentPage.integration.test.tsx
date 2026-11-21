@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { followUpResponse } from '../test/mocks/fixtures';
 
 import {
   followUpAssessmentHandler,
@@ -178,6 +179,7 @@ describe('AssessmentPage (integration)', () => {
     // The follow-up carried the confirmed symptom and the answer across the SOA boundary.
     expect(receivedFollowUpRequests).toEqual([
       {
+        assessmentId: followUpResponse.assessmentId,
         confirmedSymptoms: ['itching'],
         deniedSymptoms: [],
         answer: { symptom: 'nodal_skin_eruptions', present: true },
