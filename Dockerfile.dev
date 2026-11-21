@@ -12,7 +12,7 @@ ARG VITE_HANKO_API_URL=https://identity-dev.pocket-doc.app
 ENV VITE_HANKO_API_URL=${VITE_HANKO_API_URL}
 RUN npm run build -- --sourcemap
 
-FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:0ec17b0dac55776357d46d882bed7f3d504b0e4a0bc7379c7dbb74bd12b9d4da AS runtime
+FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:f90ef283a8a580912aa56315c3ed8f54cf50c2e89ed7e6fbf4c53368b55d712f AS runtime
 ARG VITE_HANKO_API_URL=https://identity-dev.pocket-doc.app
 USER root
 RUN apk upgrade --no-cache \
