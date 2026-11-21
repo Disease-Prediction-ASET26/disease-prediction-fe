@@ -21,7 +21,7 @@ export function ResultRoute() {
   }
 
   return (
-    <main className="result-page">
+    <main className="narrow-page result-page">
       <h1>Your assessment</h1>
       <UrgencyBanner urgency={urgency} redFlags={assessment.result?.redFlags} />
       {assessment.result ? (
@@ -29,8 +29,13 @@ export function ResultRoute() {
       ) : (
         <p>No prediction is available for this assessment.</p>
       )}
-      <p>
-        <Link to={PATHS.assessment}>Start a new assessment</Link>
+      <p className="page-actions">
+        <Link className="button secondary" to={PATHS.assessment}>
+          Start a new assessment
+        </Link>{' '}
+        <Link className="text-button" to={PATHS.reports}>
+          See all my reports
+        </Link>
       </p>
     </main>
   );

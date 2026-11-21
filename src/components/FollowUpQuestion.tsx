@@ -16,11 +16,12 @@ export interface FollowUpQuestionProps {
  */
 export function FollowUpQuestion({ followUp, onAnswer, disabled = false }: FollowUpQuestionProps) {
   return (
-    <section className="follow-up" aria-labelledby="follow-up-heading">
-      <h2 id="follow-up-heading" className="follow-up-heading">
-        One more question
+    <section className="question-card follow-up" aria-labelledby="follow-up-heading">
+      <p className="question-number">One more question</p>
+      <h2 id="follow-up-heading" className="follow-up-question">
+        {followUp.question}
       </h2>
-      <p className="follow-up-question">{followUp.question}</p>
+      <p>Your answer helps make the result more useful.</p>
       <div className="follow-up-actions">
         <button type="button" onClick={() => onAnswer(true)} disabled={disabled}>
           Yes

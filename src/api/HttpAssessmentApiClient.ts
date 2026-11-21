@@ -1,7 +1,14 @@
 import type { AssessmentRequest, AssessmentResponse, FollowUpRequest } from '../domain/assessment';
 import { isAssessmentResponse } from '../domain/assessment';
+import type { AssessmentDetail, AssessmentSummary } from '../domain/history';
+import { isAssessmentDetail, isAssessmentSummary } from '../domain/history';
 import type { AssessmentApiClient } from './AssessmentApiClient';
-import { NetworkError, UnrecognizedSymptomsError, ValidationError } from './errors';
+import {
+  AssessmentNotFoundError,
+  NetworkError,
+  UnrecognizedSymptomsError,
+  ValidationError,
+} from './errors';
 import { toProblemError } from './problem';
 
 export const ASSESSMENTS_PATH = '/api/assessments';
@@ -36,6 +43,56 @@ export class HttpAssessmentApiClient implements AssessmentApiClient {
 
   submitFollowUp(request: FollowUpRequest): Promise<AssessmentResponse> {
     return this.post(FOLLOWUP_PATH, request);
+  }
+
+  async listAssessments(): Promise<AssessmentSummary[]> {
+    const parsed = await this.get(ASSESSMENTS_PATH);
+    if (!Array.isArray(parsed) || !parsed.every(isAssessmentSummary)) {
+      throw new NetworkError('The assessment service sent an unexpected response.');
+    }
+    return parsed;
+  }
+
+  async getAssessment(assessmentId: string): Promise<AssessmentDetail> {
+    const parsed = await this.get(`${ASSESSMENTS_PATH}/${encodeURIComponent(assessmentId)}`);
+    if (!isAssessmentDetail(parsed)) {
+      throw new NetworkError('The assessment service sent an unexpected response.');
+    }
+    return parsed;
+  }
+
+  /** GET a JSON resource from an assessment endpoint and map errors like {@link post}. */
+  private async get(path: string): Promise<unknown> {
+    let response: Response;
+    try {
+      response = await this.fetchFn(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+    } catch {
+      throw new NetworkError();
+    }
+
+    if (response.status === 404) {
+      throw new AssessmentNotFoundError();
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw await toProblemError(response);
+    }
+    if (!response.ok) {
+      throw new NetworkError(
+        'The assessment service is unavailable right now. Please try again.',
+        response.status,
+      );
+    }
+    try {
+      return await response.json();
+    } catch {
+      throw new NetworkError(
+        'The assessment service sent an unreadable response.',
+        response.status,
+      );
+    }
   }
 
   /** POST a JSON body to an assessment endpoint and map the response (or error) uniformly. */

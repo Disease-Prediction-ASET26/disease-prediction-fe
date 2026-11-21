@@ -131,6 +131,7 @@ export function useAssessment(clientOverride?: AssessmentApiClient): UseAssessme
 
       try {
         const response = await client.submitFollowUp({
+          assessmentId: data.assessmentId,
           confirmedSymptoms: confirmedSymptoms.current,
           deniedSymptoms: deniedSymptoms.current,
           answer: { symptom: followUp.symptom, present },

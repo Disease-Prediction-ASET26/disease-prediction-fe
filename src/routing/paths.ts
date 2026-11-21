@@ -11,7 +11,23 @@ export const PATHS = {
   login: '/login',
   onboarding: '/onboarding',
   account: '/account',
+  // Pocket Doc app shell: patient history (backend MDD Iteration 7) and the role workspaces
+  reports: '/reports',
+  reportDetail: '/reports/:assessmentId',
+  appointments: '/appointments',
+  doctorAssessments: '/doctor/assessments',
+  doctorSchedule: '/doctor/schedule',
+  doctorProfile: '/doctor/profile',
+  adminDoctors: '/admin/doctors',
+  adminUsers: '/admin/users',
+  adminModel: '/admin/model',
+  adminAudit: '/admin/audit',
 } as const;
+
+/** The URL of one stored assessment (`PATHS.reportDetail` with its id). */
+export function reportPath(assessmentId: string): string {
+  return `${PATHS.reports}/${encodeURIComponent(assessmentId)}`;
+}
 
 /** `location.state` set by the guards, so login and onboarding can return to the original page. */
 export interface RedirectLocationState {

@@ -6,6 +6,8 @@ import { PredictionResultView } from '../components/PredictionResultView';
 import { SymptomChecklist } from '../components/SymptomChecklist';
 import { SymptomFreeTextInput } from '../components/SymptomFreeTextInput';
 import { UrgencyBanner } from '../components/UrgencyBanner';
+import { EMERGENCY_NUMBER } from '../components/EmergencyBanner';
+import { EmergencyNote, PageHeader } from '../components/ui/Layout';
 import type { AssessmentResponse, SymptomEntry } from '../domain/assessment';
 import { hasAnySymptomSignal, urgencyOf } from '../domain/assessment';
 
@@ -75,16 +77,19 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
   const showFollowUp = status === 'success' && pendingFollowUp !== null && !isEmergency;
 
   return (
-    <main className="assessment-page">
-      <h1>Symptom assessment</h1>
-      <p className="lede">
-        Tell us how you feel. You can describe your symptoms in your own words, tick them from the
-        list, or both.
-      </p>
+    <main className="narrow-page assessment-page">
+      <PageHeader
+        eyebrow="New assessment"
+        title="Tell us what is happening"
+        description="Describe your symptoms in your own words, choose them from the list, or both."
+      />
+      <EmergencyNote>
+        In an emergency, stop and call <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a>.
+      </EmergencyNote>
 
       {showInlineResult && <UrgencyBanner urgency={urgency} redFlags={data.result?.redFlags} />}
 
-      <form onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
+      <form className="form-card" onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
         <SymptomFreeTextInput value={freeText} onChange={setFreeText} disabled={isLoading} />
         <SymptomChecklist
           value={symptomEntries}
@@ -122,7 +127,12 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
       {status === 'error' && error?.kind === 'network' && (
         <div className="message message-error" role="alert">
           <p>{error.message}</p>
-          <button type="button" onClick={() => void send()} disabled={!canSubmit}>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => void send()}
+            disabled={!canSubmit}
+          >
             Try again
           </button>
         </div>

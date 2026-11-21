@@ -4,23 +4,25 @@ import { renderAppAt } from '../test/renderRouter';
 import { PATHS, readAssessmentState } from './paths';
 
 describe('route model', () => {
-  it('/ renders the home view with a link to /assessment', () => {
+  it('/ renders the patient overview with a link to /assessment', async () => {
     renderAppAt(PATHS.home);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Check your symptoms' }),
+      screen.getByRole('heading', { level: 1, name: 'How are you feeling today?' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Start an assessment' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Start a new assessment/ })).toHaveAttribute(
       'href',
       PATHS.assessment,
     );
+    // The recent assessments come from GET /api/assessments.
+    expect(await screen.findByRole('link', { name: /Migraine/ })).toBeInTheDocument();
   });
 
   it('renders a labelled main navigation on every route', () => {
     renderAppAt(PATHS.assessment);
 
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(within(nav).getByRole('link', { name: 'Overview' })).toHaveAttribute('href', '/');
     expect(within(nav).getByRole('link', { name: 'New assessment' })).toHaveAttribute(
       'aria-current',
       'page',

@@ -14,6 +14,10 @@ function fakeClient(
   return {
     submitAssessment: vi.fn(impl),
     submitFollowUp: vi.fn(followUpImpl ?? (async () => predictionResponse)),
+    listAssessments: vi.fn(async () => []),
+    getAssessment: vi.fn(async () => {
+      throw new Error('not used');
+    }),
   };
 }
 
@@ -178,7 +182,9 @@ describe('useAssessment follow-up loop', () => {
       await result.current.answerFollowUp(true);
     });
 
+    // The stored assessment's id lets the backend (Iteration 7) update it in place.
     expect(client.submitFollowUp).toHaveBeenCalledWith({
+      assessmentId: vague.assessmentId,
       confirmedSymptoms: ['itching'],
       deniedSymptoms: [],
       answer: { symptom: 'nodal_skin_eruptions', present: true },
@@ -204,6 +210,7 @@ describe('useAssessment follow-up loop', () => {
     });
 
     expect(client.submitFollowUp).toHaveBeenLastCalledWith({
+      assessmentId: vague.assessmentId,
       confirmedSymptoms: ['itching'],
       deniedSymptoms: [],
       answer: { symptom: 'nodal_skin_eruptions', present: false },
@@ -215,6 +222,7 @@ describe('useAssessment follow-up loop', () => {
       await result.current.answerFollowUp(false);
     });
     expect(client.submitFollowUp).toHaveBeenLastCalledWith({
+      assessmentId: vague.assessmentId,
       confirmedSymptoms: ['itching'],
       deniedSymptoms: ['nodal_skin_eruptions'],
       answer: { symptom: 'nodal_skin_eruptions', present: false },

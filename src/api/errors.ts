@@ -56,5 +56,15 @@ export class ApiProblemError extends Error {
   }
 }
 
+/** The stored assessment does not exist or belongs to someone else (HTTP 404). */
+export class AssessmentNotFoundError extends Error {
+  readonly kind = 'not-found' as const;
+
+  constructor(message = 'We could not find this assessment.') {
+    super(message);
+    this.name = 'AssessmentNotFoundError';
+  }
+}
+
 export type AssessmentError =
   ValidationError | UnrecognizedSymptomsError | NetworkError | ApiProblemError;
