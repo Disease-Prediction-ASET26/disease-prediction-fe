@@ -28,13 +28,32 @@ export interface AssessmentPageProps {
  * it shows the yes/no question and re-predicts on each answer, and only hands the final result to
  * {@link AssessmentPageProps.onAssessmentComplete} once no follow-up remains.
  */
+/** The two symptom-input formats (FR-P1). One is shown at a time; the patient can switch. */
+type InputMode = 'freeText' | 'checklist';
+
 export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
   const [freeText, setFreeText] = useState('');
   const [symptomEntries, setSymptomEntries] = useState<SymptomEntry[]>([]);
+  const [inputMode, setInputMode] = useState<InputMode>('freeText');
   const { status, data, error, submit, answerFollowUp } = useAssessment();
 
-  const input: AssessmentInput = { freeText, symptomEntries, patientId: null };
-  const canSubmit = hasAnySymptomSignal({ freeText, symptomEntries });
+  /**
+   * Switch input mode and clear the input being left behind, so only the visible mode can
+   * contribute a symptom signal. No-op when the mode is unchanged.
+   */
+  const changeMode = (mode: InputMode) => {
+    if (mode === inputMode) return;
+    if (mode === 'freeText') setSymptomEntries([]);
+    else setFreeText('');
+    setInputMode(mode);
+  };
+
+  // Only the active mode's input is sent and counts toward the submit signal.
+  const input: AssessmentInput =
+    inputMode === 'freeText'
+      ? { freeText, symptomEntries: [], patientId: null }
+      : { freeText: '', symptomEntries, patientId: null };
+  const canSubmit = hasAnySymptomSignal(input);
   const isLoading = status === 'loading';
   const hintId = 'assessment-submit-hint';
 
@@ -81,7 +100,7 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
       <PageHeader
         eyebrow="New assessment"
         title="Tell us what is happening"
-        description="Describe your symptoms in your own words, choose them from the list, or both."
+        description="Describe your symptoms in your own words, or choose them from a list."
       />
       <EmergencyNote>
         In an emergency, stop and call <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a>.
@@ -90,12 +109,43 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
       {showInlineResult && <UrgencyBanner urgency={urgency} redFlags={data.result?.redFlags} />}
 
       <form className="form-card" onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
-        <SymptomFreeTextInput value={freeText} onChange={setFreeText} disabled={isLoading} />
-        <SymptomChecklist
-          value={symptomEntries}
-          onChange={setSymptomEntries}
-          disabled={isLoading}
-        />
+        <fieldset className="field input-mode">
+          <legend>How would you like to describe your symptoms?</legend>
+          <div className="segmented" role="radiogroup" aria-label="Symptom input format">
+            <label className={inputMode === 'freeText' ? 'segment is-active' : 'segment'}>
+              <input
+                type="radio"
+                name="input-mode"
+                value="freeText"
+                checked={inputMode === 'freeText'}
+                disabled={isLoading}
+                onChange={() => changeMode('freeText')}
+              />
+              In my own words
+            </label>
+            <label className={inputMode === 'checklist' ? 'segment is-active' : 'segment'}>
+              <input
+                type="radio"
+                name="input-mode"
+                value="checklist"
+                checked={inputMode === 'checklist'}
+                disabled={isLoading}
+                onChange={() => changeMode('checklist')}
+              />
+              Choose from a list
+            </label>
+          </div>
+        </fieldset>
+
+        {inputMode === 'freeText' ? (
+          <SymptomFreeTextInput value={freeText} onChange={setFreeText} disabled={isLoading} />
+        ) : (
+          <SymptomChecklist
+            value={symptomEntries}
+            onChange={setSymptomEntries}
+            disabled={isLoading}
+          />
+        )}
 
         <div className="form-actions">
           <button
@@ -107,7 +157,9 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
           </button>
           {!canSubmit && (
             <p id={hintId} className="field-hint">
-              Describe your symptoms or select at least one from the list to continue.
+              {inputMode === 'freeText'
+                ? 'Describe your symptoms to continue.'
+                : 'Select at least one symptom from the list to continue.'}
             </p>
           )}
         </div>
