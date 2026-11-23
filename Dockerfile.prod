@@ -9,7 +9,7 @@ ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN npm run build
 
-FROM nginx/nginx-unprivileged:1.31.8-alpine3.24@sha256:0ec17b0dac55776357d46d882bed7f3d504b0e4a0bc7379c7dbb74bd12b9d4da AS runtime
+FROM nginx/nginx-unprivileged:1.31.9-alpine3.24@sha256:60214a103e6f38e953ff957f34b1f2e97a9db801ab2df3821da955d0fe6cadd6 AS runtime
 USER root
 RUN apk upgrade --no-cache
 USER 101
