@@ -7,7 +7,41 @@ export const PATHS = {
   assessment: '/assessment',
   result: '/assessment/result',
   emergency: '/assessment/emergency',
+  // MDD Iteration 6
+  login: '/login',
+  onboarding: '/onboarding',
+  account: '/account',
+  // Pocket Doc app shell: patient history (backend MDD Iteration 7) and the role workspaces
+  reports: '/reports',
+  reportDetail: '/reports/:assessmentId',
+  appointments: '/appointments',
+  doctorAssessments: '/doctor/assessments',
+  doctorSchedule: '/doctor/schedule',
+  doctorProfile: '/doctor/profile',
+  adminDoctors: '/admin/doctors',
+  adminUsers: '/admin/users',
+  adminModel: '/admin/model',
+  adminAudit: '/admin/audit',
 } as const;
+
+/** The URL of one stored assessment (`PATHS.reportDetail` with its id). */
+export function reportPath(assessmentId: string): string {
+  return `${PATHS.reports}/${encodeURIComponent(assessmentId)}`;
+}
+
+/** `location.state` set by the guards, so login and onboarding can return to the original page. */
+export interface RedirectLocationState {
+  from: string;
+}
+
+/** The page to return to after login or onboarding; never an auth page, never another origin. */
+export function readRedirectTarget(state: unknown, fallback: string = PATHS.assessment): string {
+  if (typeof state !== 'object' || state === null) return fallback;
+  const from = (state as Partial<RedirectLocationState>).from;
+  if (typeof from !== 'string' || !from.startsWith('/') || from.startsWith('//')) return fallback;
+  if (from === PATHS.login || from === PATHS.onboarding) return fallback;
+  return from;
+}
 
 /**
  * Router `location.state` carried from the form to the result/emergency routes. The response

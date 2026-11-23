@@ -1,22 +1,21 @@
 import { useId } from 'react';
-import type { Severity, SymptomEntry } from '../domain/assessment';
-import type { SymptomOption } from '../domain/symptoms';
-import { CHECKLIST_SYMPTOMS, toSymptomEntry } from '../domain/symptoms';
-import { SeveritySelect } from './SeveritySelect';
+import type { SymptomEntry } from '../domain/assessment';
+import type { SymptomGroup, SymptomOption } from '../domain/symptoms';
+import { SYMPTOM_GROUPS, toSymptomEntry } from '../domain/symptoms';
 
 export interface SymptomChecklistProps {
   /** The current selection, as the `symptomEntries` that will be sent. */
   value: SymptomEntry[];
   onChange: (entries: SymptomEntry[]) => void;
-  options?: readonly SymptomOption[];
+  groups?: readonly SymptomGroup[];
   disabled?: boolean;
 }
 
-/** FR-P1: structured checklist of known symptoms, each checked item with its own severity. */
+/** FR-P1: structured checklist of known symptoms, grouped by body system. */
 export function SymptomChecklist({
   value,
   onChange,
-  options = CHECKLIST_SYMPTOMS,
+  groups = SYMPTOM_GROUPS,
   disabled = false,
 }: SymptomChecklistProps) {
   const groupId = useId();
@@ -30,39 +29,35 @@ export function SymptomChecklist({
     }
   };
 
-  const changeSeverity = (option: SymptomOption, severity: Severity) => {
-    onChange(value.map((entry) => (entry.rawText === option.id ? { ...entry, severity } : entry)));
-  };
-
   return (
     <fieldset className="field checklist">
       <legend>Or select symptoms from the list</legend>
-      <ul>
-        {options.map((option) => {
-          const entry = selected.get(option.id);
-          const checkboxId = `${groupId}-${option.id}`;
-          return (
-            <li key={option.id} className={entry ? 'checklist-item is-checked' : 'checklist-item'}>
-              <input
-                type="checkbox"
-                id={checkboxId}
-                checked={entry !== undefined}
-                disabled={disabled}
-                onChange={() => toggle(option)}
-              />
-              <label htmlFor={checkboxId}>{option.label}</label>
-              {entry && (
-                <SeveritySelect
-                  symptomLabel={option.label}
-                  value={entry.severity}
-                  disabled={disabled}
-                  onChange={(severity) => changeSeverity(option, severity)}
-                />
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {groups.map((group) => (
+        <div key={group.title} className="checklist-group">
+          <h3 className="checklist-group-title">{group.title}</h3>
+          <ul>
+            {group.options.map((option) => {
+              const entry = selected.get(option.id);
+              const checkboxId = `${groupId}-${option.id}`;
+              return (
+                <li
+                  key={option.id}
+                  className={entry ? 'checklist-item is-checked' : 'checklist-item'}
+                >
+                  <input
+                    type="checkbox"
+                    id={checkboxId}
+                    checked={entry !== undefined}
+                    disabled={disabled}
+                    onChange={() => toggle(option)}
+                  />
+                  <label htmlFor={checkboxId}>{option.label}</label>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </fieldset>
   );
 }

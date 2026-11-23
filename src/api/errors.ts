@@ -40,4 +40,31 @@ export class NetworkError extends Error {
   }
 }
 
-export type AssessmentError = ValidationError | UnrecognizedSymptomsError | NetworkError;
+/**
+ * The backend refused the request for a reason the user can act on (a 4xx problem response with a
+ * `code`, MDD Iteration 6): no profile yet, no consent, wrong role, session ended.
+ */
+export class ApiProblemError extends Error {
+  readonly kind = 'problem' as const;
+  readonly code: string;
+  readonly status: number;
+  constructor(code: string, status: number, message: string) {
+    super(message);
+    this.name = 'ApiProblemError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
+/** The stored assessment does not exist or belongs to someone else (HTTP 404). */
+export class AssessmentNotFoundError extends Error {
+  readonly kind = 'not-found' as const;
+
+  constructor(message = 'We could not find this assessment.') {
+    super(message);
+    this.name = 'AssessmentNotFoundError';
+  }
+}
+
+export type AssessmentError =
+  ValidationError | UnrecognizedSymptomsError | NetworkError | ApiProblemError;

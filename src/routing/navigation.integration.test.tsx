@@ -13,7 +13,7 @@ describe('navigation flow (integration)', () => {
   it('home → assessment via the call to action', async () => {
     const { router } = renderAppAt(PATHS.home);
 
-    await userEvent.click(screen.getByRole('link', { name: 'Start an assessment' }));
+    await userEvent.click(screen.getByRole('link', { name: /Start a new assessment/ }));
 
     expect(router.state.location.pathname).toBe(PATHS.assessment);
     expect(textbox()).toBeInTheDocument();
@@ -25,7 +25,9 @@ describe('navigation flow (integration)', () => {
     await userEvent.type(textbox(), 'I have a cough');
     await submit();
 
-    expect(await screen.findByRole('heading', { name: 'Possible conditions' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Most likely condition' }),
+    ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe(PATHS.result);
     expect(screen.getByText('Common Cold')).toBeInTheDocument();
     expect(screen.getByText('82%')).toBeInTheDocument();
@@ -50,9 +52,48 @@ describe('navigation flow (integration)', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('112');
     expect(router.state.location.pathname).toBe(PATHS.emergency);
+    // The page leads with the ambulance instruction and the red flag behind it.
+    expect(
+      screen.getByRole('heading', { name: 'Call an ambulance (112) now' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/heart emergency/);
     // FR-P5: prediction is halted, with no link through to it.
     expect(screen.queryByText('Common Cold')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /assessment details/i })).not.toBeInTheDocument();
+  });
+
+  it('an URGENT response shows the result with a "see a doctor promptly" banner above it', async () => {
+    const { router } = renderAppAt(PATHS.assessment);
+
+    await userEvent.type(textbox(), 'I have a high fever');
+    await submit();
+
+    expect(
+      await screen.findByRole('heading', { name: 'See a doctor promptly' }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(PATHS.result);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText('Common Cold')).toBeInTheDocument();
+    // The banner comes before the result.
+    const banner = screen.getByRole('status', { name: '' });
+    const result = screen.getByRole('heading', { name: 'Most likely condition' });
+    expect(banner.compareDocumentPosition(result) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole('note')).toHaveTextContent('This is not a medical diagnosis');
+  });
+
+  it('a benign response shows no urgency banner', async () => {
+    renderAppAt(PATHS.assessment);
+
+    await userEvent.type(textbox(), 'I have a cough');
+    await submit();
+
+    expect(
+      await screen.findByRole('heading', { name: 'Most likely condition' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'See a doctor promptly' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('a 400 keeps the user on /assessment with a validation message', async () => {
@@ -71,7 +112,7 @@ describe('navigation flow (integration)', () => {
 
     await userEvent.type(textbox(), 'cough');
     await submit();
-    await screen.findByRole('heading', { name: 'Possible conditions' });
+    await screen.findByRole('heading', { name: 'Most likely condition' });
 
     await act(() => router.navigate(-1));
 
@@ -87,7 +128,7 @@ describe('navigation flow (integration)', () => {
     const { router } = renderAppAt(PATHS.assessment);
     await userEvent.type(textbox(), 'cough');
     await submit();
-    await screen.findByRole('heading', { name: 'Possible conditions' });
+    await screen.findByRole('heading', { name: 'Most likely condition' });
 
     await userEvent.click(screen.getByRole('link', { name: 'New assessment' }));
 
