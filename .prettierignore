@@ -4,3 +4,6 @@ node_modules
 package-lock.json
 .github
 .pre-commit-config.yaml
+.impeccable/build
+.impeccable/questions
+.impeccable/mocks

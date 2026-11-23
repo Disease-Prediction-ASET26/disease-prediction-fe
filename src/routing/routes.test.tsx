@@ -7,9 +7,7 @@ describe('route model', () => {
   it('/ renders the patient overview with a link to /assessment', async () => {
     renderAppAt(PATHS.home);
 
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'How are you feeling today?' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Hello, Test' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Start a new assessment/ })).toHaveAttribute(
       'href',
       PATHS.assessment,
@@ -32,7 +30,7 @@ describe('route model', () => {
   it('/assessment renders the Iteration 3 assessment form', () => {
     renderAppAt(PATHS.assessment);
 
-    expect(screen.getByRole('textbox', { name: 'Describe your symptoms' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Your symptoms' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Get assessment' })).toBeDisabled();
   });
 

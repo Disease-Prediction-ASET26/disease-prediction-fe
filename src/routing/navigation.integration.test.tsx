@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { receivedRequests, validationErrorHandler } from '../test/mocks/handlers';
 import { server } from '../test/mocks/server';
@@ -7,8 +7,44 @@ import { PATHS } from './paths';
 
 /** Full route table + real page/hook/HTTP client, with `POST /api/assessments` mocked by MSW. */
 describe('navigation flow (integration)', () => {
-  const textbox = () => screen.getByRole('textbox', { name: 'Describe your symptoms' });
+  const textbox = () => screen.getByRole('textbox', { name: 'Your symptoms' });
   const submit = () => userEvent.click(screen.getByRole('button', { name: 'Get assessment' }));
+
+  it('opens mobile navigation, contains keyboard focus, and returns focus on Escape', async () => {
+    const user = userEvent.setup();
+    let deferredFocus: FrameRequestCallback | undefined;
+    const requestAnimationFrame = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        deferredFocus = callback;
+        return 1;
+      });
+    renderAppAt(PATHS.home);
+    const menu = screen.getByRole('button', { name: 'Open navigation' });
+
+    try {
+      await user.click(menu);
+
+      expect(menu).toHaveAttribute('aria-expanded', 'true');
+      expect(
+        within(screen.getByRole('complementary')).getByRole('button', {
+          name: 'Close navigation',
+        }),
+      ).toHaveFocus();
+      await user.keyboard('{Shift>}{Tab}{/Shift}');
+      expect(screen.getByRole('button', { name: 'Sign out' })).toHaveFocus();
+
+      expect(deferredFocus).toBeDefined();
+      act(() => deferredFocus?.(0));
+      expect(screen.getByRole('button', { name: 'Sign out' })).toHaveFocus();
+
+      await user.keyboard('{Escape}');
+      expect(menu).toHaveAttribute('aria-expanded', 'false');
+      expect(menu).toHaveFocus();
+    } finally {
+      requestAnimationFrame.mockRestore();
+    }
+  });
 
   it('home → assessment via the call to action', async () => {
     const { router } = renderAppAt(PATHS.home);

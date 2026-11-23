@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T14:38:45Z",
+  "title": "Pocket Doc design guide",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "primary-button",
+        "value": "0 1px 5px rgba(36, 25, 50, 0.1)",
+        "purpose": "Primary button elevation."
+      },
+      {
+        "name": "selected-segment",
+        "value": "0 1px 2px rgba(16, 24, 40, 0.12)",
+        "purpose": "Selected input mode."
+      }
+    ],
+    "motion": [
+      {
+        "name": "mobile-sidebar",
+        "value": "transform 0.2s",
+        "purpose": "Show or hide the mobile navigation; respect reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Starts the main action.",
+      "html": "<button class=\"ds-button\">Start an assessment</button>",
+      "css": ".ds-button { min-height: 42px; padding: 0 16px; border: 1px solid transparent; border-radius: 9px; background: var(--accent, #1b5139); color: var(--accent-contrast, #fff); font-size: 14px; font-weight: 750; } .ds-button:hover { background: var(--accent-hover, #123c2a); } .ds-button:focus-visible { outline: 3px solid var(--focus, #3b8060); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "A labelled field for patient input.",
+      "html": "<label class=\"ds-label\" for=\"ds-input\">Full name</label><input class=\"ds-input\" id=\"ds-input\" type=\"text\">",
+      "css": ".ds-label { display: block; margin-bottom: 7px; color: var(--text-strong, #214835); font-size: 14px; font-weight: 750; } .ds-input { box-sizing: border-box; width: 100%; padding: 11px 12px; border: 1px solid var(--border, #cbd4c0); border-radius: 9px; background: var(--surface, #fff); color: var(--text, #193c2c); font-size: 14px; line-height: 1.5; } .ds-input:focus-visible { outline: 3px solid var(--focus, #3b8060); outline-offset: 2px; }"
+    },
+    {
+      "name": "Navigation link",
+      "kind": "nav",
+      "description": "An active navigation link.",
+      "html": "<nav aria-label=\"Example\"><a class=\"ds-nav\" href=\"#\">Overview</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; min-height: 45px; padding: 0 12px; border-radius: 9px; background: var(--accent-soft, #e3eee0); color: var(--accent, #1b5139); font-size: 14px; font-weight: 650; text-decoration: none; } .ds-nav:hover { background: var(--surface-hover, #e5e9d9); } .ds-nav:focus-visible { outline: 3px solid var(--focus, #3b8060); outline-offset: 2px; }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Groups related information.",
+      "html": "<section class=\"ds-panel\"><h2>Recent assessments</h2><p>Your assessments appear here.</p></section>",
+      "css": ".ds-panel { padding: 18px 20px; background: var(--surface, #fff); border: 1px solid var(--border, #cbd4c0); border-radius: 13px; color: var(--text, #193c2c); } .ds-panel h2 { margin: 0 0 6px; font-size: 16px; } .ds-panel p { margin: 0; color: var(--muted, #52655a); font-size: 13px; }"
+    },
+    {
+      "name": "Emergency reminder",
+      "kind": "custom",
+      "description": "Shows emergency guidance near patient tasks.",
+      "html": "<p class=\"ds-emergency\">In an emergency, call <a href=\"tel:112\">112</a>.</p>",
+      "css": ".ds-emergency { display: flex; gap: 9px; margin: 0; padding: 10px 13px; border: 1px solid var(--warning-border, #e0b44c); border-radius: 9px; background: var(--warning-bg, #fff6e0); color: var(--warning-text, #6a3e00); font-size: 13px; } .ds-emergency a { color: inherit; font-weight: 800; } .ds-emergency a:focus-visible { outline: 3px solid var(--focus, #3b8060); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "overview": "A forest green and warm ivory interface with clear hierarchy.",
+    "keyCharacteristics": [
+      "Emergency guidance remains prominent.",
+      "Use plain, specific language.",
+      "Keep light and dark modes in sync."
+    ],
+    "rules": [],
+    "dos": ["Do use visible focus states and meaningful labels.", "Do respect reduced motion."],
+    "donts": [
+      "Don't delay emergency instructions.",
+      "Don't add decorative cards that add no information."
+    ]
+  }
+}

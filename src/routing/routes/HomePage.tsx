@@ -1,4 +1,8 @@
 import { Link } from 'react-router-dom';
+import { Button } from '@radix-ui/themes';
+import stethoscopeImage from '../../assets/stethoscope.svg';
+import leafImage from '../../assets/ginkgo-leaf.svg';
+import fernImage from '../../assets/fern-leaf.svg';
 import { useProfile } from '../../application/ProfileContext';
 import { useAssessmentList } from '../../application/useStoredAssessments';
 import { useAuth } from '../../auth/AuthContext';
@@ -29,19 +33,57 @@ export function HomePage() {
 
 function Landing() {
   return (
-    <main className="narrow-page home-page">
-      <PageHeader
-        eyebrow="Pocket Doc"
-        title="Check your symptoms"
-        description="Describe how you feel and get the condition that most likely matches your symptoms, with an explanation and recommended precautions. It takes about two minutes."
-      />
-      <EmergencyNote>
-        This is not a medical diagnosis. If you think you are having an emergency, call{' '}
-        <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a>.
-      </EmergencyNote>
-      <Link className="button primary" to={PATHS.assessment}>
-        Start an assessment
-      </Link>
+    <main className="home-page landing-page">
+      <section className="landing-hero">
+        <div className="landing-hero-inner">
+          <div className="landing-copy">
+            <h1>Check your symptoms</h1>
+            <p className="landing-lede">
+              When something feels off, understanding your symptoms can be a helpful first step.
+              Pocket Doc offers information about possible conditions and precautions.
+            </p>
+            <Button size="3" asChild>
+              <Link to={PATHS.assessment}>
+                Start an assessment <Icon name="chevron" size={20} />
+              </Link>
+            </Button>
+          </div>
+          <div className="landing-art" aria-hidden="true">
+            <img className="landing-leaf landing-leaf-two" src={leafImage} alt="" />
+            <img className="landing-leaf landing-leaf-three" src={leafImage} alt="" />
+            <img className="landing-stethoscope" src={stethoscopeImage} alt="" />
+          </div>
+          <p className="landing-emergency">
+            <Icon name="alert" size={20} />
+            <span>
+              This is not a medical diagnosis. In an emergency, call{' '}
+              <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a>.
+            </span>
+          </p>
+        </div>
+        <div className="landing-border" aria-hidden="true">
+          <span className="landing-border-ground" />
+          <img className="landing-border-fern landing-border-fern-left" src={fernImage} alt="" />
+          <img className="landing-border-fern landing-border-fern-right" src={fernImage} alt="" />
+          <img className="landing-border-fern landing-border-fern-small" src={fernImage} alt="" />
+        </div>
+      </section>
+      <section className="landing-about" aria-labelledby="about-assessment">
+        <div>
+          <h2 id="about-assessment">Understanding your assessment</h2>
+        </div>
+        <div className="landing-about-copy">
+          <p>
+            Describe what you are experiencing or select symptoms from a list. You may be asked
+            follow-up questions.
+          </p>
+          <p>
+            Your assessment may include a possible condition, an explanation and precautions. It is
+            information, not a diagnosis, and does not replace professional medical advice.
+          </p>
+          <p>You can review saved assessments in My reports and manage your consent in Account.</p>
+        </div>
+      </section>
     </main>
   );
 }
@@ -54,33 +96,23 @@ function PatientDashboard({ profile }: { profile: Profile }) {
   return (
     <main>
       <PageHeader
-        eyebrow={`Hello, ${firstName}`}
-        title="How are you feeling today?"
-        description="Start a private symptom assessment or check your recent assessments."
+        title={`Hello, ${firstName}`}
+        description="Start a symptom assessment or review a previous one."
       />
       <EmergencyNote>
         If you think you have a medical emergency, call{' '}
         <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a> now.
       </EmergencyNote>
       <Link className="assessment-hero" to={PATHS.assessment}>
-        <span className="hero-icon">
-          <Icon name="pulse" size={28} />
-        </span>
         <span>
-          <small>AI-guided symptom check</small>
           <strong>Start a new assessment</strong>
-          <b>Describe what you feel in your own words or choose symptoms from the list.</b>
+          <span>Describe your symptoms or choose from a list.</span>
         </span>
-        <i>
-          <Icon name="chevron" />
-        </i>
+        <Icon name="chevron" />
       </Link>
 
       <ul className="stat-grid" aria-label="Your status">
         <li className="stat">
-          <span>
-            <Icon name="file" />
-          </span>
           <div>
             <small>Latest assessment</small>
             {state.status === 'loading' && <strong>Loading…</strong>}
@@ -100,9 +132,6 @@ function PatientDashboard({ profile }: { profile: Profile }) {
           </div>
         </li>
         <li className="stat">
-          <span>
-            <Icon name="shield" />
-          </span>
           <div>
             <small>Health data consent</small>
             <strong>{profile.consentGranted ? 'Active' : 'Withdrawn'}</strong>
@@ -114,13 +143,9 @@ function PatientDashboard({ profile }: { profile: Profile }) {
           </div>
         </li>
         <li className="stat">
-          <span>
-            <Icon name="calendar" />
-          </span>
           <div>
             <small>Appointments</small>
             <strong>Not available yet</strong>
-            <p>Booking a specialist is coming in a later release</p>
           </div>
         </li>
       </ul>

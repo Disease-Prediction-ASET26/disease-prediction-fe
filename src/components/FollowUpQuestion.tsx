@@ -1,4 +1,5 @@
 import type { FollowUp } from '../domain/assessment';
+import { Button } from '@radix-ui/themes';
 
 export interface FollowUpQuestionProps {
   followUp: FollowUp;
@@ -23,12 +24,12 @@ export function FollowUpQuestion({ followUp, onAnswer, disabled = false }: Follo
       </h2>
       <p>Your answer helps make the result more useful.</p>
       <div className="follow-up-actions">
-        <button type="button" onClick={() => onAnswer(true)} disabled={disabled}>
+        <Button type="button" onClick={() => onAnswer(true)} disabled={disabled}>
           Yes
-        </button>
-        <button type="button" onClick={() => onAnswer(false)} disabled={disabled}>
+        </Button>
+        <Button type="button" variant="soft" onClick={() => onAnswer(false)} disabled={disabled}>
           No
-        </button>
+        </Button>
       </div>
     </section>
   );

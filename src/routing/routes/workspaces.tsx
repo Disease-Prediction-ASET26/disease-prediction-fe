@@ -11,7 +11,6 @@ import { initialsOf } from '../navigation';
  * empty state instead of sample data, so nothing on screen can be mistaken for real records.
  */
 interface UpcomingPageProps {
-  eyebrow?: string;
   title: string;
   description: string;
   emptyTitle: string;
@@ -19,17 +18,10 @@ interface UpcomingPageProps {
   icon: IconName;
 }
 
-function UpcomingPage({
-  eyebrow,
-  title,
-  description,
-  emptyTitle,
-  emptyBody,
-  icon,
-}: UpcomingPageProps) {
+function UpcomingPage({ title, description, emptyTitle, emptyBody, icon }: UpcomingPageProps) {
   return (
     <main>
-      <PageHeader eyebrow={eyebrow} title={title} description={description} />
+      <PageHeader title={title} description={description} />
       <section className="panel" aria-label={title}>
         <EmptyState icon={icon} title={emptyTitle} body={emptyBody} />
       </section>
@@ -55,7 +47,6 @@ export function DoctorDashboard({ profile }: { profile: Profile }) {
   return (
     <main>
       <PageHeader
-        eyebrow="Doctor workspace"
         title={`Welcome, ${profile.fullName}`}
         description="Review patient assessments sent to you and prepare for consultations."
       />
@@ -129,7 +120,6 @@ export function AdminDashboard() {
   return (
     <main>
       <PageHeader
-        eyebrow="Administration"
         title="System overview"
         description="Manage access, doctor verification and clinical AI governance."
       />
