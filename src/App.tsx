@@ -15,12 +15,13 @@ function getDefaultAuthClient(): AuthClient {
 export interface AppProps {
   /** Tests pass a fake; the app uses Hanko. */
   authClient?: AuthClient;
+  fetchFn?: typeof fetch;
 }
 
 /** Iteration 4: the router decides which view is shown. Iteration 6: inside the session. */
-export function App({ authClient }: AppProps) {
+export function App({ authClient, fetchFn }: AppProps) {
   return (
-    <AppProviders authClient={authClient ?? getDefaultAuthClient()}>
+    <AppProviders authClient={authClient ?? getDefaultAuthClient()} fetchFn={fetchFn}>
       <RouterProvider router={appRouter} />
     </AppProviders>
   );

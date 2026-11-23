@@ -29,29 +29,23 @@ export function LoginRoute() {
   if (status === 'loading') return <LoadingView />;
 
   return (
-    <main className="narrow-page auth-page">
-      <h1>Sign in</h1>
-      <p className="lede">
-        Sign in or create an account to check your symptoms. Your assessments are linked to your
-        account.
-      </p>
-      {elementsFailed ? (
-        <div className="message message-error" role="alert">
-          <p>Sign-in is unavailable right now. Please try again later.</p>
-        </div>
-      ) : (
-        <>
-          <p>
-            To register with email, select <strong>Create account</strong> at the bottom of the
-            form.
-          </p>
-          <p>
-            If you created your account with email, continue to sign in with email. Connecting
-            Google to an existing email account is not available yet.
-          </p>
+    <main className="narrow-page auth-page" aria-labelledby="sign-in-title">
+      <div className="auth-intro">
+        <h1 id="sign-in-title">Sign in</h1>
+        <p className="lede">
+          Sign in or create an account to check your symptoms. Your assessments are linked to your
+          account.
+        </p>
+      </div>
+      <section className="auth-panel" aria-label="Sign-in options">
+        {elementsFailed ? (
+          <div className="message message-error" role="alert">
+            <p>Sign-in is unavailable right now. Please try again later.</p>
+          </div>
+        ) : (
           <hanko-auth />
-        </>
-      )}
+        )}
+      </section>
     </main>
   );
 }

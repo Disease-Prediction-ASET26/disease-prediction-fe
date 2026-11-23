@@ -1,10 +1,10 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
+import { Button } from '@radix-ui/themes';
 import type { AssessmentInput } from '../application/useAssessment';
 import { useAssessment } from '../application/useAssessment';
 import { FollowUpQuestion } from '../components/FollowUpQuestion';
 import { PredictionResultView } from '../components/PredictionResultView';
 import { SymptomChecklist } from '../components/SymptomChecklist';
-import { SymptomFreeTextInput } from '../components/SymptomFreeTextInput';
 import { UrgencyBanner } from '../components/UrgencyBanner';
 import { EMERGENCY_NUMBER } from '../components/EmergencyBanner';
 import { EmergencyNote, PageHeader } from '../components/ui/Layout';
@@ -32,6 +32,7 @@ export interface AssessmentPageProps {
 type InputMode = 'freeText' | 'checklist';
 
 export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
+  const id = useId();
   const [freeText, setFreeText] = useState('');
   const [symptomEntries, setSymptomEntries] = useState<SymptomEntry[]>([]);
   const [inputMode, setInputMode] = useState<InputMode>('freeText');
@@ -55,7 +56,8 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
       : { freeText: '', symptomEntries, patientId: null };
   const canSubmit = hasAnySymptomSignal(input);
   const isLoading = status === 'loading';
-  const hintId = 'assessment-submit-hint';
+  const hintId = `${id}-submit-hint`;
+  const symptomsId = `${id}-symptoms`;
 
   const pendingFollowUp =
     data?.result?.needsFollowUp && data.result.followUp ? data.result.followUp : null;
@@ -97,11 +99,7 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
 
   return (
     <main className="narrow-page assessment-page">
-      <PageHeader
-        eyebrow="New assessment"
-        title="Tell us what is happening"
-        description="Describe your symptoms in your own words, or choose them from a list."
-      />
+      <PageHeader title="Tell us what is happening" />
       <EmergencyNote>
         In an emergency, stop and call <a href={`tel:${EMERGENCY_NUMBER}`}>{EMERGENCY_NUMBER}</a>.
       </EmergencyNote>
@@ -110,7 +108,7 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
 
       <form className="form-card" onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
         <fieldset className="field input-mode">
-          <legend>How would you like to describe your symptoms?</legend>
+          <legend>Input method</legend>
           <div className="segmented" role="radiogroup" aria-label="Symptom input format">
             <label className={inputMode === 'freeText' ? 'segment is-active' : 'segment'}>
               <input
@@ -138,7 +136,17 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         </fieldset>
 
         {inputMode === 'freeText' ? (
-          <SymptomFreeTextInput value={freeText} onChange={setFreeText} disabled={isLoading} />
+          <div className="field symptom-description">
+            <label htmlFor={symptomsId}>Your symptoms</label>
+            <textarea
+              id={symptomsId}
+              placeholder="For example, “I have had a dry cough and a headache since Monday.”"
+              rows={5}
+              value={freeText}
+              disabled={isLoading}
+              onChange={(event) => setFreeText(event.target.value)}
+            />
+          </div>
         ) : (
           <SymptomChecklist
             value={symptomEntries}
@@ -148,17 +156,17 @@ export function AssessmentPage({ onAssessmentComplete }: AssessmentPageProps) {
         )}
 
         <div className="form-actions">
-          <button
+          <Button
             type="submit"
             disabled={!canSubmit || isLoading}
             aria-describedby={canSubmit ? undefined : hintId}
           >
             {isLoading ? 'Analysing…' : 'Get assessment'}
-          </button>
+          </Button>
           {!canSubmit && (
             <p id={hintId} className="field-hint">
               {inputMode === 'freeText'
-                ? 'Describe your symptoms to continue.'
+                ? 'Add symptoms to continue.'
                 : 'Select at least one symptom from the list to continue.'}
             </p>
           )}

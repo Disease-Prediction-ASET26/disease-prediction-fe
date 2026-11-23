@@ -1,26 +1,37 @@
 import type { ReactNode } from 'react';
+import { Badge as RadixBadge } from '@radix-ui/themes';
 import type { IconName } from './Icon';
 import { Icon } from './Icon';
 
 export type BadgeTone = 'neutral' | 'blue' | 'green' | 'yellow' | 'orange' | 'red';
 
 export function Badge({ children, tone = 'neutral' }: { children: ReactNode; tone?: BadgeTone }) {
-  return <span className={`badge ${tone}`}>{children}</span>;
+  const colors = {
+    neutral: 'gray',
+    blue: 'grass',
+    green: 'green',
+    yellow: 'amber',
+    orange: 'orange',
+    red: 'red',
+  } as const;
+  return (
+    <RadixBadge color={colors[tone]} variant="soft" size="2">
+      {children}
+    </RadixBadge>
+  );
 }
 
 export interface PageHeaderProps {
-  eyebrow?: string;
   title: string;
   description?: ReactNode;
   action?: ReactNode;
 }
 
 /** The page title block of the Pocket Doc design. The `h1` is the route's main heading. */
-export function PageHeader({ eyebrow, title, description, action }: PageHeaderProps) {
+export function PageHeader({ title, description, action }: PageHeaderProps) {
   return (
     <div className="page-header">
       <div>
-        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
         <h1>{title}</h1>
         {description && <p className="page-description">{description}</p>}
       </div>

@@ -12,44 +12,60 @@ const messageOf = (error: unknown) =>
 
 /** Loads a resource once per `key`, ignoring responses that arrive after the key changed. */
 function useLoad<T>(load: () => Promise<T>, key: string) {
-  const [state, setState] = useState<LoadState<T>>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const [snapshot, setSnapshot] = useState<{
+    key: string;
+    attempt: number;
+    load: typeof load;
+    state: LoadState<T>;
+  }>({ key, attempt, load, state: { status: 'loading' } });
 
   useEffect(() => {
     let active = true;
-    setState({ status: 'loading' });
-    load().then(
-      (data) => {
-        if (active) setState({ status: 'success', data });
-      },
-      (error: unknown) => {
-        if (!active) return;
-        const notFound =
-          typeof error === 'object' &&
-          error !== null &&
-          (error as { kind?: unknown }).kind === 'not-found';
-        setState({ status: 'error', message: messageOf(error), notFound });
-      },
-    );
+    setSnapshot({ key, attempt, load, state: { status: 'loading' } });
+    Promise.resolve()
+      .then(load)
+      .then(
+        (data) => {
+          if (active) setSnapshot({ key, attempt, load, state: { status: 'success', data } });
+        },
+        (error: unknown) => {
+          if (!active) return;
+          const notFound =
+            typeof error === 'object' &&
+            error !== null &&
+            (error as { kind?: unknown }).kind === 'not-found';
+          setSnapshot({
+            key,
+            attempt,
+            load,
+            state: { status: 'error', message: messageOf(error), notFound },
+          });
+        },
+      );
     return () => {
       active = false;
     };
-    // `load` is rebuilt every render; `key` and `attempt` decide when to reload.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, attempt]);
+  }, [key, attempt, load]);
 
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
+  const state =
+    snapshot.key === key && snapshot.attempt === attempt && snapshot.load === load
+      ? snapshot.state
+      : { status: 'loading' as const };
   return { state, reload };
 }
 
 /** The signed-in patient's stored assessments, newest first (`GET /api/assessments`). */
 export function useAssessmentList() {
   const client = useAssessmentApiClient();
-  return useLoad<AssessmentSummary[]>(() => client.listAssessments(), 'list');
+  const load = useCallback(() => client.listAssessments(), [client]);
+  return useLoad<AssessmentSummary[]>(load, 'list');
 }
 
 /** One stored assessment (`GET /api/assessments/{id}`). */
 export function useAssessmentDetail(assessmentId: string) {
   const client = useAssessmentApiClient();
-  return useLoad<AssessmentDetail>(() => client.getAssessment(assessmentId), assessmentId);
+  const load = useCallback(() => client.getAssessment(assessmentId), [assessmentId, client]);
+  return useLoad<AssessmentDetail>(load, assessmentId);
 }

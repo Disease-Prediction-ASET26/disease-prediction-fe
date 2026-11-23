@@ -208,6 +208,24 @@ src/
 └─ test/          test setup + MSW handlers/fixtures
 ```
 
+## User interface
+
+The app uses Radix Themes for shared interface components and Lucide for icons. The theme follows the system color preference until the user selects light or dark with the header
+control. That choice is stored in browser local storage. The theme is configured in
+`src/AppProviders.tsx`; the theme's token and component
+stylesheets are loaded before `src/styles.css`. Add the Radix layout or utility stylesheets only
+when using those features. The app's CSS variables define the Pocket Doc palette for existing
+components and Hanko Elements. See [the design guide](DESIGN.md) before adding or changing UI.
+
+The landing page uses public-domain vector illustrations: [Stethoscope by oksmith](https://openclipart.org/detail/314248/stethoscope)
+(adapted and recolored), [Ginkgo Leaf by j4p4n](https://openclipart.org/detail/290887/gingko-leaf-green), and
+[Fern Leaf Silhouette by GDJ](https://openclipart.org/detail/314892) (recolored).
+The self-hosted Cormorant Garamond font is under the [SIL Open Font License](src/assets/fonts/OFL.txt).
+
+Radix Themes ships a shared stylesheet. Check the production build's compressed CSS and JavaScript
+sizes with `npm run build` when adding components or dependencies. Prefer CSS for simple transitions
+and respect the reduced-motion setting.
+
 ## Model-driven development docs
 
 Diagrams and model-to-code traceability live in the docs repository,

@@ -22,7 +22,7 @@ import { PATHS, readRedirectTarget } from './paths';
  */
 describe('authentication flow (integration)', () => {
   const hankoAuth = () => document.querySelector('hanko-auth');
-  const textbox = () => screen.findByRole('textbox', { name: 'Describe your symptoms' });
+  const textbox = () => screen.findByRole('textbox', { name: 'Your symptoms' });
 
   it('the home page stays public', async () => {
     renderApp({ entries: [PATHS.home], auth: new FakeAuthClient(false) });
@@ -31,13 +31,13 @@ describe('authentication flow (integration)', () => {
     expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
   });
 
-  it('explains how a new user can register with email', async () => {
+  it('explains sign-in and account creation options', async () => {
     renderApp({ entries: [PATHS.login], auth: new FakeAuthClient(false) });
 
     await screen.findByRole('heading', { name: 'Sign in' });
-    expect(screen.getByText(/to register with email, select/i)).toBeInTheDocument();
-    expect(screen.getByText('Create account', { selector: 'strong' })).toBeInTheDocument();
-    expect(screen.getByText(/connecting google to an existing email account/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/sign in or create an account to check your symptoms/i),
+    ).toBeInTheDocument();
     expect(hankoAuth()).not.toBeNull();
   });
 

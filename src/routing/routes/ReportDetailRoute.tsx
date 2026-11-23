@@ -69,12 +69,15 @@ function Detail({ assessment }: { assessment: AssessmentDetail }) {
   return (
     <>
       <PageHeader
-        eyebrow={`Assessment · ${formatDate(assessment.createdAt)}`}
         title="Your assessment"
         description={
-          assessment.status === 'IN_PROGRESS'
-            ? 'This assessment still has an unanswered follow-up question.'
-            : 'The result of this assessment, as it was when you completed it.'
+          <>
+            <time dateTime={assessment.createdAt}>{formatDate(assessment.createdAt)}</time>
+            {' · '}
+            {assessment.status === 'IN_PROGRESS'
+              ? 'This assessment still has an unanswered follow-up question.'
+              : 'The result of this assessment, as it was when you completed it.'}
+          </>
         }
         action={
           <Badge tone={assessment.report.status === 'REVIEWED' ? 'green' : 'blue'}>

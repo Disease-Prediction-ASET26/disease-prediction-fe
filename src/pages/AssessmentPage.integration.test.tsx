@@ -21,7 +21,7 @@ import { AssessmentPage } from './AssessmentPage';
  */
 describe('AssessmentPage (integration)', () => {
   const submitButton = () => screen.getByRole('button', { name: 'Get assessment' });
-  const textbox = () => screen.getByRole('textbox', { name: 'Describe your symptoms' });
+  const textbox = () => screen.getByRole('textbox', { name: 'Your symptoms' });
   const switchToChecklist = () =>
     userEvent.click(screen.getByRole('radio', { name: 'Choose from a list' }));
 
@@ -29,7 +29,7 @@ describe('AssessmentPage (integration)', () => {
     renderWithSession(<AssessmentPage />);
 
     expect(submitButton()).toBeDisabled();
-    expect(screen.getByText(/Describe your symptoms to continue/)).toBeInTheDocument();
+    expect(screen.getByText('Add symptoms to continue.')).toBeInTheDocument();
 
     await userEvent.type(textbox(), '   ');
     expect(submitButton()).toBeDisabled();
